@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">Prototype</string>
+    <string name="bottom_menu_item_1">Downloads</string>
+    <string name="bottom_menu_item_2">Finished</string>
+    <string name="settings_menu">Settings</string>
+    <string name="help_menu">Help</string>
+
+    <string name="title_activity_new_download">New Download</string>
+    <string name="join_room_button_label">Join a room</string>
+    <string name="create_room_button_label">Create a room</string>
+    <string name="room_action_description">Choose an option</string>
+
+    <string name="new_download_placeholder_description">Create a new room to initiate a new download, or join an already created room to participate in a shared download.</string>
+    <string name="create_or_join_a_room">Create or join a room</string>
+
+    <string name="qr_code_image_viewer">QR Code image viewer</string>
+
+    <string name="launch_room_description">Launch room with download link</string>
+    <string name="url_input_description">URL</string>
+    <string name="url_label">URL</string>
+    <string name="download_name_label">Label</string>
+    <string name="download_name_input_description">Label</string>
+    <string name="launch_room">Launch room</string>
 </resources>
