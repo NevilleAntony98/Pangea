@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:ignore="AlwaysShowAction">
+    <item
+        android:id="@+id/settings_menu"
+        android:icon="@drawable/ic_outline_settings_24"
+        android:title="@string/settings_menu"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/help_menu"
+        android:icon="@drawable/ic_baseline_help_outline_24"
+        android:title="@string/help_menu"
+        app:showAsAction="always" />
+</menu>
