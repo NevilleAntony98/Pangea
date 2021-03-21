@@ -21,4 +21,7 @@
     <string name="download_name_label">Label</string>
     <string name="download_name_input_description">Label</string>
     <string name="launch_room">Launch room</string>
+    <string name="invalid_unreachable_url">Invalid or unreachable URL</string>
+    <string name="partial_download_unsupported">This URL doesn\'t support partial downloads</string>
+    <string name="partial_download_supported">This URL supports partial downloads</string>
 </resources>
