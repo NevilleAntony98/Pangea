@@ -24,4 +24,9 @@
     <string name="invalid_unreachable_url">Invalid or unreachable URL</string>
     <string name="partial_download_unsupported">This URL doesn\'t support partial downloads</string>
     <string name="partial_download_supported">This URL supports partial downloads</string>
+    <string name="title_activity_room">RoomActivity</string>
+
+    <string name="Room">Room</string>
+    <string name="room_view_room">View Room</string>
+    <string name="share_room">Share Room</string>
 </resources>
