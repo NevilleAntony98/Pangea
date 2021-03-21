@@ -8,20 +8,29 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.jakewharton.rxbinding4.material.RxBottomNavigationView;
+import com.jakewharton.rxbinding4.viewpager2.RxViewPager2;
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.adapters.ViewPagerAdapter;
 import com.nevilleantony.prototype.fragments.SampleFragment;
+
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity {
 
 	ViewPager2 viewPager;
 	ViewPagerAdapter viewPagerAdapter;
+	CompositeDisposable disposables;
+
+	public MainActivity() {
+		disposables = new CompositeDisposable();
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,42 +44,39 @@ public class MainActivity extends AppCompatActivity {
 		viewPagerAdapter.addFragment(SampleFragment.newInstance("Completed Page"));
 
 		final BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
-		bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-			@Override
-			public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-				switch (item.getItemId()) {
-					case R.id.downloads_action:
-						viewPager.setCurrentItem(0);
-						break;
-					case R.id.finished_downloads_action:
-						viewPager.setCurrentItem(1);
-						break;
-				}
-				return true;
-			}
-		});
+		Disposable disposable = RxBottomNavigationView.itemSelections(bottomNavigationView)
+				.subscribe(menuItem -> {
+					switch (menuItem.getItemId()) {
+						case R.id.downloads_action:
+							viewPager.setCurrentItem(0);
+							break;
+						case R.id.finished_downloads_action:
+							viewPager.setCurrentItem(1);
+							break;
+					}
+				});
+		disposables.add(disposable);
 
-		viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-			@Override
-			public void onPageSelected(int position) {
-				super.onPageSelected(position);
+		disposable = RxViewPager2.pageSelections(viewPager)
+				.skipInitialValue()
+				.subscribe(position -> {
+					int item_id = R.id.downloads_action;
+					FloatingActionButton fab = findViewById(R.id.new_download_fab);
 
-				int item_id = R.id.downloads_action;
-				FloatingActionButton fab = findViewById(R.id.new_download_fab);
+					switch (position) {
+						case 0:
+							fab.show();
+							break;
+						case 1:
+							item_id = R.id.finished_downloads_action;
+							fab.hide();
+							break;
+					}
 
-				switch (position) {
-					case 0:
-						fab.show();
-						break;
-					case 1:
-						item_id = R.id.finished_downloads_action;
-						fab.hide();
-						break;
-				}
+					bottomNavigationView.getMenu().findItem(item_id).setChecked(true);
+				});
+		disposables.add(disposable);
 
-				bottomNavigationView.getMenu().findItem(item_id).setChecked(true);
-			}
-		});
 		viewPager.setAdapter(viewPagerAdapter);
 	}
 
@@ -97,5 +103,11 @@ public class MainActivity extends AppCompatActivity {
 	public void onFABClicked(View view) {
 		Intent intent = new Intent(this, NewDownloadActivity.class);
 		startActivity(intent);
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		disposables.dispose();
 	}
 }
