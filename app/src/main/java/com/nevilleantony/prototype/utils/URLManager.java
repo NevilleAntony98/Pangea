@@ -6,17 +6,23 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class URLManager {
-	/*
-	These are blocking calls, make sure to run it in a different thread.
-	 */
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
+public class URLManager {
 	private static final String TAG = "URLManager";
 
 	private URLManager() {
 	}
 
-	public static URLProperties getURLProperties(String urlString) {
+	public static Single<URLProperties> getURLProperties(String url) {
+		return Single.fromCallable(() -> getProperties(url))
+				.subscribeOn(Schedulers.io())
+				.observeOn(AndroidSchedulers.mainThread());
+	}
+
+	private static URLProperties getProperties(String urlString) {
 		HttpURLConnection httpURLConnection = null;
 		boolean isReachable = false;
 		boolean canAcceptRanges = false;

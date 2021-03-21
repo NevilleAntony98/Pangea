@@ -22,12 +22,13 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class CreateRoomSubpage extends Fragment {
 
 	private final CompositeDisposable compositeDisposable;
 	private TextInputLayout textInputLayout;
+	private Button launchButton;
+	private boolean urlIsReachable;
 
 	public CreateRoomSubpage() {
 		compositeDisposable = new CompositeDisposable();
@@ -38,14 +39,19 @@ public class CreateRoomSubpage extends Fragment {
 	                         Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_create_room_subpage, container, false);
 		textInputLayout = view.findViewById(R.id.url_text_input_layout);
+		TextInputEditText textInputEditText = view.findViewById(R.id.url_edit_text);
 
-		Button launchButton = view.findViewById(R.id.launch_button);
+		launchButton = view.findViewById(R.id.launch_button);
 		launchButton.setOnClickListener((button_view) -> {
+			if (!urlIsReachable)
+				return;
+
+			String url = textInputEditText.getText().toString();
 			Intent intent = new Intent(getActivity(), RoomActivity.class);
+			intent.putExtra("url", url);
 			startActivity(intent);
 		});
 
-		TextInputEditText textInputEditText = view.findViewById(R.id.url_edit_text);
 		Disposable disposable = RxTextView.textChanges(textInputEditText)
 				.skipInitialValue()
 				.debounce(500, TimeUnit.MILLISECONDS)
@@ -66,8 +72,12 @@ public class CreateRoomSubpage extends Fragment {
 		Disposable nestedDisposable;
 
 		if (charSequence.toString().isEmpty()) {
+			urlIsReachable = false;
+
 			nestedDisposable = Single.fromCallable(() -> {
 				textInputLayout.setError(null);
+				textInputLayout.setHelperText(null);
+				launchButton.setEnabled(false);
 
 				return true;
 			})
@@ -79,9 +89,7 @@ public class CreateRoomSubpage extends Fragment {
 			return;
 		}
 
-		nestedDisposable = Single.fromCallable(() -> URLManager.getURLProperties(charSequence.toString()))
-				.subscribeOn(Schedulers.io())
-				.observeOn(AndroidSchedulers.mainThread())
+		nestedDisposable = URLManager.getURLProperties(charSequence.toString())
 				.subscribe((urlProperties) -> {
 					if (!urlProperties.isReachable) {
 						textInputLayout.setError(getString(R.string.invalid_unreachable_url));
@@ -95,6 +103,9 @@ public class CreateRoomSubpage extends Fragment {
 							textInputLayout.setHelperText(getString(R.string.partial_download_supported));
 						}
 					}
+
+					urlIsReachable = urlProperties.isReachable;
+					launchButton.setEnabled(urlIsReachable);
 				});
 
 		compositeDisposable.add(nestedDisposable);
