@@ -4,6 +4,17 @@ android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
 
+//  For proper de-sugaring of some libraries
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+//    In case I use kotlin later
+//    kotlinOptions {
+//        jvmTarget = "1.8"
+//    }
+
     defaultConfig {
         applicationId "com.nevilleantony.prototype"
         minSdkVersion 27
