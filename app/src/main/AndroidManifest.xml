@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nevilleantony.prototype" >
+    package="com.nevilleantony.prototype">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!--  usesCleartextTraffic: Needed for connecting to HTTP urls-->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Prototype" >
-        <activity
-            android:name=".activities.MainActivity" >
+        android:theme="@style/Theme.Prototype"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -20,8 +22,8 @@
         <activity
             android:name=".activities.NewDownloadActivity"
             android:label="@string/title_activity_new_download"
-            android:theme="@style/Theme.Prototype"
-            android:parentActivityName=".activities.MainActivity">
+            android:parentActivityName=".activities.MainActivity"
+            android:theme="@style/Theme.Prototype">
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
