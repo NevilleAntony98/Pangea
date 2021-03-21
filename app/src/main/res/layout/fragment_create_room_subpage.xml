@@ -28,10 +28,14 @@
         android:orientation="vertical">
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/url_text_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:hint="@string/url_label"
+            app:errorEnabled="true"
+            app:helperTextEnabled="true"
+            app:helperTextTextAppearance="?attr/textAppearanceCaption"
             app:startIconContentDescription="@string/url_input_description"
             app:startIconDrawable="@drawable/ic_baseline_insert_link_24">
 

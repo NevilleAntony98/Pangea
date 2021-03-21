@@ -7,4 +7,15 @@
     <style name="GreenButton" parent="Widget.MaterialComponents.Button">
         <item name="android:backgroundTint">@color/colorAccent</item>
     </style>
+    
+    <style name="warningHelperText" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textColor">@color/colorWarning</item>
+        <item name="color">@color/colorWarning</item>
+    </style>
+
+    <style name="successHelperText" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textColor">@color/colorSuccess</item>
+        <item name="color">@color/colorWarning</item>
+    </style>
+
 </resources>
