@@ -1,9 +1,11 @@
 package com.nevilleantony.prototype.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.fragment.app.Fragment;
 
@@ -11,6 +13,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jakewharton.rxbinding4.widget.RxTextView;
 import com.nevilleantony.prototype.R;
+import com.nevilleantony.prototype.activities.RoomActivity;
 import com.nevilleantony.prototype.utils.URLManager;
 
 import java.util.concurrent.TimeUnit;
@@ -35,8 +38,14 @@ public class CreateRoomSubpage extends Fragment {
 	                         Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_create_room_subpage, container, false);
 		textInputLayout = view.findViewById(R.id.url_text_input_layout);
-		TextInputEditText textInputEditText = view.findViewById(R.id.url_edit_text);
 
+		Button launchButton = view.findViewById(R.id.launch_button);
+		launchButton.setOnClickListener((button_view) -> {
+			Intent intent = new Intent(getActivity(), RoomActivity.class);
+			startActivity(intent);
+		});
+
+		TextInputEditText textInputEditText = view.findViewById(R.id.url_edit_text);
 		Disposable disposable = RxTextView.textChanges(textInputEditText)
 				.skipInitialValue()
 				.debounce(500, TimeUnit.MILLISECONDS)

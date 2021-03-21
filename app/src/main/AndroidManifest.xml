@@ -29,6 +29,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.MainActivity" />
         </activity>
+        <activity
+            android:name=".activities.RoomActivity"
+            android:label="@string/Room"
+            android:parentActivityName=".activities.NewDownloadActivity"
+            >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.NewDownloadActivity" />
+        </activity>
     </application>
 
 </manifest>
