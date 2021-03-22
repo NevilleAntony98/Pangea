@@ -1,6 +1,7 @@
 package com.nevilleantony.prototype.activities;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
@@ -10,15 +11,22 @@ import com.jakewharton.rxbinding4.material.RxBottomNavigationView;
 import com.jakewharton.rxbinding4.viewpager2.RxViewPager2;
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.adapters.ViewPagerAdapter;
+import com.nevilleantony.prototype.fragments.RoomViewFragment;
 import com.nevilleantony.prototype.fragments.SampleFragment;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 
 public class RoomActivity extends AppCompatActivity {
+	private static final String TAG = "RoomActivity";
 
 	private final CompositeDisposable disposables;
 	private ViewPager2 viewPager;
+	private URL url;
+	private String roomName;
 
 	public RoomActivity() {
 		disposables = new CompositeDisposable();
@@ -29,10 +37,19 @@ public class RoomActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_room);
 
+		try {
+			url = new URL(getIntent().getStringExtra("url"));
+		} catch (MalformedURLException e) {
+			Log.d(TAG, "onCreate: Failed to create URL object");
+			e.printStackTrace();
+		}
+
+		roomName = getIntent().getStringExtra("room_name");
+
 		viewPager = findViewById(R.id.room_view_pager);
 		ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
 
-		viewPagerAdapter.addFragment(SampleFragment.newInstance("View room"));
+		viewPagerAdapter.addFragment(RoomViewFragment.newInstance(url, roomName));
 		viewPagerAdapter.addFragment(SampleFragment.newInstance("Share room"));
 
 		BottomNavigationView bottomNavigationView = findViewById(R.id.room_bottom_navigation_bar);
