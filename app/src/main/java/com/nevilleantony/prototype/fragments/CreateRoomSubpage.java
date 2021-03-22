@@ -39,20 +39,24 @@ public class CreateRoomSubpage extends Fragment {
 	                         Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_create_room_subpage, container, false);
 		textInputLayout = view.findViewById(R.id.url_text_input_layout);
-		TextInputEditText textInputEditText = view.findViewById(R.id.url_edit_text);
+		TextInputEditText urlEditText = view.findViewById(R.id.url_edit_text);
+		TextInputEditText downloadNameEditText = view.findViewById(R.id.download_name_edit_text);
 
 		launchButton = view.findViewById(R.id.launch_button);
 		launchButton.setOnClickListener((button_view) -> {
 			if (!urlIsReachable)
 				return;
 
-			String url = textInputEditText.getText().toString();
+			String url = urlEditText.getText().toString();
+			String downloadName = downloadNameEditText.getText().toString();
+
 			Intent intent = new Intent(getActivity(), RoomActivity.class);
 			intent.putExtra("url", url);
+			intent.putExtra("room_name", downloadName);
 			startActivity(intent);
 		});
 
-		Disposable disposable = RxTextView.textChanges(textInputEditText)
+		Disposable disposable = RxTextView.textChanges(urlEditText)
 				.skipInitialValue()
 				.debounce(500, TimeUnit.MILLISECONDS)
 				.subscribe(this::onTextChangeConsumer);

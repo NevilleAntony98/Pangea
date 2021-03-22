@@ -68,11 +68,11 @@
 
     <Button
         android:id="@+id/launch_button"
-        style="@style/GreenButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="32dp"
+        android:enabled="false"
         android:padding="16dp"
         android:text="@string/launch_room" />
 

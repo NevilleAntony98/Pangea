@@ -3,10 +3,6 @@
     <style name="Theme.Prototype" parent="Theme.MaterialComponents">
 
     </style>
-
-    <style name="GreenButton" parent="Widget.MaterialComponents.Button">
-        <item name="android:backgroundTint">@color/colorAccent</item>
-    </style>
     
     <style name="warningHelperText" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textColor">@color/colorWarning</item>
