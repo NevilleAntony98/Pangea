@@ -23,7 +23,8 @@
             android:name=".activities.NewDownloadActivity"
             android:label="@string/title_activity_new_download"
             android:parentActivityName=".activities.MainActivity"
-            android:theme="@style/Theme.Prototype">
+            android:theme="@style/Theme.Prototype"
+            android:windowSoftInputMode="adjustPan">
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -33,7 +34,7 @@
             android:name=".activities.RoomActivity"
             android:label="@string/Room"
             android:parentActivityName=".activities.NewDownloadActivity"
-            >
+            android:windowSoftInputMode="adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.NewDownloadActivity" />
