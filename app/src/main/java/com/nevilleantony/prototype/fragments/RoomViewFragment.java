@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,9 +14,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.jakewharton.rxbinding4.widget.RxTextView;
 import com.nevilleantony.prototype.R;
-import com.nevilleantony.prototype.utils.URLManager;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -71,7 +68,7 @@ public class RoomViewFragment extends Fragment {
 		TextInputLayout urlTextInputLayout = view.findViewById(R.id.room_url_text_input_layout);
 		urlTextInputLayout.setEndIconOnClickListener((v) -> {
 			ClipboardManager clipboardManager =
-					(ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+					(ClipboardManager) requireActivity().getSystemService(Context.CLIPBOARD_SERVICE);
 			ClipData clipData = ClipData.newPlainText("URL", urlTextEditText.getText());
 			clipboardManager.setPrimaryClip(clipData);
 			Toast.makeText(getContext(), "URL copied", Toast.LENGTH_SHORT).show();
