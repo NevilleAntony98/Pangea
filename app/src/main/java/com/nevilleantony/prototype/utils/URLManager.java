@@ -91,5 +91,9 @@ public class URLManager {
 
 			return this;
 		}
+
+		public long getContentLength() {
+			return contentLength;
+		}
 	}
 }
