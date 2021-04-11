@@ -22,19 +22,22 @@ import java.net.URL;
 public class RoomViewFragment extends Fragment {
 	private static final String ARG_URL = "url";
 	private static final String ARG_ROOM_NAME = "download_name";
+	private static final String ARG_DOWNLOAD_SIZE = "download_size";
 
 	private URL downloadURL;
 	private String roomName;
+	private String downloadSize;
 
 	public RoomViewFragment() {
 		// Required empty public constructor
 	}
 
-	public static RoomViewFragment newInstance(URL url, String roomName) {
+	public static RoomViewFragment newInstance(URL url, String roomName, String downloadSize) {
 		RoomViewFragment fragment = new RoomViewFragment();
 		Bundle args = new Bundle();
 		args.putString(ARG_URL, url.toString());
 		args.putString(ARG_ROOM_NAME, roomName);
+		args.putString(ARG_DOWNLOAD_SIZE, downloadSize);
 		fragment.setArguments(args);
 
 		return fragment;
@@ -54,6 +57,7 @@ public class RoomViewFragment extends Fragment {
 			}
 
 			roomName = getArguments().getString(ARG_ROOM_NAME);
+			downloadSize = getArguments().getString(ARG_DOWNLOAD_SIZE);
 		}
 	}
 
@@ -75,6 +79,7 @@ public class RoomViewFragment extends Fragment {
 		});
 
 		urlTextEditText.setText(downloadURL.toString());
+		urlTextInputLayout.setHelperText(downloadSize);
 
 		return view;
 	}

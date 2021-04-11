@@ -27,6 +27,7 @@ public class RoomActivity extends AppCompatActivity {
 	private ViewPager2 viewPager;
 	private URL url;
 	private String roomName;
+	private String downloadSize;
 
 	public RoomActivity() {
 		disposables = new CompositeDisposable();
@@ -45,11 +46,12 @@ public class RoomActivity extends AppCompatActivity {
 		}
 
 		roomName = getIntent().getStringExtra("room_name");
+		downloadSize = getIntent().getStringExtra("download_size");
 
 		viewPager = findViewById(R.id.room_view_pager);
 		ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
 
-		viewPagerAdapter.addFragment(RoomViewFragment.newInstance(url, roomName));
+		viewPagerAdapter.addFragment(RoomViewFragment.newInstance(url, roomName, downloadSize));
 		viewPagerAdapter.addFragment(SampleFragment.newInstance("Share room"));
 
 		BottomNavigationView bottomNavigationView = findViewById(R.id.room_bottom_navigation_bar);

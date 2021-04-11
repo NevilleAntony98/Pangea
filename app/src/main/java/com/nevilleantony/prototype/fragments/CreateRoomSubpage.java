@@ -15,6 +15,7 @@ import com.jakewharton.rxbinding4.widget.RxTextView;
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.activities.RoomActivity;
 import com.nevilleantony.prototype.utils.URLManager;
+import com.nevilleantony.prototype.utils.Utils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -29,6 +30,7 @@ public class CreateRoomSubpage extends Fragment {
 	private TextInputLayout textInputLayout;
 	private Button launchButton;
 	private boolean urlIsReachable;
+	private long downloadSizeBytes;
 
 	public CreateRoomSubpage() {
 		compositeDisposable = new CompositeDisposable();
@@ -49,10 +51,12 @@ public class CreateRoomSubpage extends Fragment {
 
 			String url = urlEditText.getText().toString();
 			String downloadName = downloadNameEditText.getText().toString();
+			String downloadSize = Utils.getHumanReadableSize(downloadSizeBytes);
 
 			Intent intent = new Intent(getActivity(), RoomActivity.class);
 			intent.putExtra("url", url);
 			intent.putExtra("room_name", downloadName);
+			intent.putExtra("download_size", downloadSize);
 			startActivity(intent);
 		});
 
@@ -109,6 +113,8 @@ public class CreateRoomSubpage extends Fragment {
 					}
 
 					urlIsReachable = urlProperties.isReachable;
+					downloadSizeBytes = urlProperties.getContentLength();
+
 					launchButton.setEnabled(urlIsReachable);
 				});
 
