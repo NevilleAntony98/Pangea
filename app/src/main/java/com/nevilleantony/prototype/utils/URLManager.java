@@ -48,7 +48,7 @@ public class URLManager {
 				canAcceptRanges = true;
 
 				String contentRangeField = httpURLConnection.getHeaderField("content-range");
-				if (contentRangeField != null ) {
+				if (contentRangeField != null) {
 					String size = contentRangeField.split("/")[1];
 					if (!size.equals("*")) {
 						contentLength = Long.parseLong(size);

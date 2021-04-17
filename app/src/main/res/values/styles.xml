@@ -3,7 +3,7 @@
     <style name="Theme.Prototype" parent="Theme.MaterialComponents">
 
     </style>
-    
+
     <style name="warningHelperText" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textColor">@color/colorWarning</item>
         <item name="color">@color/colorWarning</item>
