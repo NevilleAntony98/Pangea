@@ -11,19 +11,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.nevilleantony.prototype.R;
+import com.nevilleantony.prototype.adapters.PeerListAdapter;
+import com.nevilleantony.prototype.dummy.PeerListDummy;
+import com.nevilleantony.prototype.peer.Peer;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 public class RoomViewFragment extends Fragment {
 	private static final String ARG_URL = "url";
 	private static final String ARG_ROOM_NAME = "download_name";
 	private static final String ARG_DOWNLOAD_SIZE = "download_size";
 
+	private RecyclerView peerListRecyclerView;
 	private URL downloadURL;
 	private String roomName;
 	private String downloadSize;
@@ -65,6 +72,8 @@ public class RoomViewFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	                         Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_room_view, container, false);
+		peerListRecyclerView = view.findViewById(R.id.peer_list_recycler_view);
+		setupPeerList();
 		TextView roomLabelTextView = view.findViewById(R.id.room_name_text_view);
 		roomLabelTextView.setText(roomName);
 
@@ -82,5 +91,11 @@ public class RoomViewFragment extends Fragment {
 		urlTextInputLayout.setHelperText(downloadSize);
 
 		return view;
+	}
+
+	private void setupPeerList() {
+		List<Peer> peers = PeerListDummy.getPeerList(10);
+		peerListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+		peerListRecyclerView.setAdapter(new PeerListAdapter(peers));
 	}
 }
