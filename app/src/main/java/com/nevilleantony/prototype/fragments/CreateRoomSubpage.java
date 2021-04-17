@@ -29,8 +29,7 @@ public class CreateRoomSubpage extends Fragment {
 	private final CompositeDisposable compositeDisposable;
 	private TextInputLayout textInputLayout;
 	private Button launchButton;
-	private boolean urlIsReachable;
-	private long downloadSizeBytes;
+	private URLManager.URLProperties urlProperties;
 
 	public CreateRoomSubpage() {
 		compositeDisposable = new CompositeDisposable();
@@ -46,12 +45,12 @@ public class CreateRoomSubpage extends Fragment {
 
 		launchButton = view.findViewById(R.id.launch_button);
 		launchButton.setOnClickListener((button_view) -> {
-			if (!urlIsReachable)
+			if (!urlProperties.isReachable)
 				return;
 
 			String url = urlEditText.getText().toString();
 			String downloadName = downloadNameEditText.getText().toString();
-			String downloadSize = Utils.getHumanReadableSize(downloadSizeBytes);
+			String downloadSize = Utils.getHumanReadableSize(urlProperties.getContentLength());
 
 			Intent intent = new Intent(getActivity(), RoomActivity.class);
 			intent.putExtra("url", url);
@@ -80,7 +79,7 @@ public class CreateRoomSubpage extends Fragment {
 		Disposable nestedDisposable;
 
 		if (charSequence.toString().isEmpty()) {
-			urlIsReachable = false;
+			urlProperties = new URLManager.URLProperties(false, false);
 
 			nestedDisposable = Single.fromCallable(() -> {
 				textInputLayout.setError(null);
@@ -112,10 +111,9 @@ public class CreateRoomSubpage extends Fragment {
 						}
 					}
 
-					urlIsReachable = urlProperties.isReachable;
-					downloadSizeBytes = urlProperties.getContentLength();
+					this.urlProperties = urlProperties;
 
-					launchButton.setEnabled(urlIsReachable);
+					launchButton.setEnabled(urlProperties.isReachable);
 				});
 
 		compositeDisposable.add(nestedDisposable);
