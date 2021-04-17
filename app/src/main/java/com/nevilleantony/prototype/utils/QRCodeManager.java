@@ -14,7 +14,7 @@ public class QRCodeManager {
 
 	public static Bitmap getEncodedBitmapFromString(String str, int width, int height) throws WriterException {
 		MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
-		BitMatrix bitMatrix = multiFormatWriter.encode(str, BarcodeFormat.QR_CODE,width,height);
+		BitMatrix bitMatrix = multiFormatWriter.encode(str, BarcodeFormat.QR_CODE, width, height);
 		BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
 
 		return barcodeEncoder.createBitmap(bitMatrix);
