@@ -29,4 +29,7 @@
     <string name="Room">Room</string>
     <string name="room_view_room">View Room</string>
     <string name="share_room">Share Room</string>
+    <string name="room_members">Members</string>
+    <string name="room_sync">sync</string>
+    <string name="kick_member">Kick member</string>
 </resources>
