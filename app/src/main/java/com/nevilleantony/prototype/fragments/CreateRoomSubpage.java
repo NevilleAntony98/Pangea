@@ -1,12 +1,18 @@
 package com.nevilleantony.prototype.fragments;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.textfield.TextInputEditText;
@@ -17,6 +23,7 @@ import com.nevilleantony.prototype.activities.RoomActivity;
 import com.nevilleantony.prototype.utils.URLManager;
 import com.nevilleantony.prototype.utils.Utils;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -30,6 +37,17 @@ public class CreateRoomSubpage extends Fragment {
 	private TextInputLayout textInputLayout;
 	private Button launchButton;
 	private URLManager.URLProperties urlProperties;
+	private boolean hasLocationPermission = false;
+	private final ActivityResultLauncher<String> requestPermissionLauncher =
+			registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+				hasLocationPermission = isGranted;
+
+				if (isGranted) {
+					launchButton.performClick();
+				} else {
+					Toast.makeText(getContext(), "Requires location permission", Toast.LENGTH_SHORT).show();
+				}
+			});
 
 	public CreateRoomSubpage() {
 		compositeDisposable = new CompositeDisposable();
@@ -43,20 +61,22 @@ public class CreateRoomSubpage extends Fragment {
 		TextInputEditText urlEditText = view.findViewById(R.id.url_edit_text);
 		TextInputEditText downloadNameEditText = view.findViewById(R.id.download_name_edit_text);
 
+		hasLocationPermission = ContextCompat.checkSelfPermission(requireActivity(),
+				Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
 		launchButton = view.findViewById(R.id.launch_button);
 		launchButton.setOnClickListener((button_view) -> {
 			if (!urlProperties.isReachable)
 				return;
 
-			String url = urlEditText.getText().toString();
-			String downloadName = downloadNameEditText.getText().toString();
-			String downloadSize = Utils.getHumanReadableSize(urlProperties.getContentLength());
+			String url = Objects.requireNonNull(urlEditText.getText()).toString();
+			String downloadName = Objects.requireNonNull(downloadNameEditText.getText()).toString();
 
-			Intent intent = new Intent(getActivity(), RoomActivity.class);
-			intent.putExtra("url", url);
-			intent.putExtra("room_name", downloadName);
-			intent.putExtra("download_size", downloadSize);
-			startActivity(intent);
+			if (!hasLocationPermission) {
+				requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+			} else {
+				launchRoom(url, downloadName);
+			}
 		});
 
 		Disposable disposable = RxTextView.textChanges(urlEditText)
@@ -73,6 +93,16 @@ public class CreateRoomSubpage extends Fragment {
 	public void onDestroy() {
 		super.onDestroy();
 		compositeDisposable.dispose();
+	}
+
+	private void launchRoom(String url, String downloadName) {
+		String downloadSize = Utils.getHumanReadableSize(urlProperties.getContentLength());
+
+		Intent intent = new Intent(getActivity(), RoomActivity.class);
+		intent.putExtra("url", url);
+		intent.putExtra("room_name", downloadName);
+		intent.putExtra("download_size", downloadSize);
+		startActivity(intent);
 	}
 
 	private void onTextChangeConsumer(CharSequence charSequence) {
