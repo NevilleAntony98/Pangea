@@ -3,6 +3,8 @@ package com.nevilleantony.prototype.fragments;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,10 +21,14 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.adapters.PeerListAdapter;
 import com.nevilleantony.prototype.dummy.PeerListDummy;
+import com.nevilleantony.prototype.peer.DefaultPeer;
 import com.nevilleantony.prototype.peer.Peer;
+import com.nevilleantony.prototype.room.RoomBroadcastReceiver;
+import com.nevilleantony.prototype.room.RoomManager;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RoomViewFragment extends Fragment {
@@ -34,6 +40,8 @@ public class RoomViewFragment extends Fragment {
 	private URL downloadURL;
 	private String roomName;
 	private String downloadSize;
+	private RoomManager networkManager;
+	private RoomBroadcastReceiver broadcastReceiver;
 
 	public RoomViewFragment() {
 		// Required empty public constructor
@@ -66,14 +74,52 @@ public class RoomViewFragment extends Fragment {
 			roomName = getArguments().getString(ARG_ROOM_NAME);
 			downloadSize = getArguments().getString(ARG_DOWNLOAD_SIZE);
 		}
+
+		networkManager = RoomManager.getInstance(getContext());
+		broadcastReceiver = new RoomBroadcastReceiver(networkManager, getActivity());
+		networkManager.initiateDiscovery(getContext(), new WifiP2pManager.ActionListener() {
+			@Override
+			public void onSuccess() {
+				Toast.makeText(getContext(), "discovery started", Toast.LENGTH_SHORT).show();
+			}
+
+			@Override
+			public void onFailure(int reason) {
+				Toast.makeText(getContext(), "discovery failed", Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		broadcastReceiver.register();
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		broadcastReceiver.unregister();
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	                         Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_room_view, container, false);
+
 		peerListRecyclerView = view.findViewById(R.id.peer_list_recycler_view);
-		setupPeerList();
+		peerListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+		peerListRecyclerView.setAdapter(new PeerListAdapter(new ArrayList<>()));
+		broadcastReceiver.setOnPeersChangedCallback(deviceList -> {
+			List<Peer> peers = new ArrayList<>();
+			for (WifiP2pDevice device : deviceList.getDeviceList()) {
+				Peer peer = new DefaultPeer(device);
+				peers.add(peer);
+			}
+
+			peerListRecyclerView.swapAdapter(new PeerListAdapter(peers), false);
+		});
+
 		TextView roomLabelTextView = view.findViewById(R.id.room_name_text_view);
 		roomLabelTextView.setText(roomName);
 
