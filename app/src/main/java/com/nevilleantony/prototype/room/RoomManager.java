@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Looper;
 import android.util.Log;
@@ -14,7 +15,7 @@ import androidx.core.app.ActivityCompat;
 import com.nevilleantony.prototype.peer.Peer;
 
 public abstract class RoomManager {
-	public static final boolean LEGACY = true;
+	public static final boolean LEGACY = false;
 	private static final String TAG = "RoomManager";
 	private static RoomManager roomManager = null;
 
@@ -64,7 +65,17 @@ public abstract class RoomManager {
 		manager.discoverPeers(channel, actionListener);
 	}
 
-	public abstract void connect(AppCompatActivity context, Peer peer);
+	public abstract void connect(Context context, Peer peer, boolean isCallerOwner);
+
+	public void requestGroupInfo(Context context, WifiP2pManager.GroupInfoListener groupInfoListener) {
+		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			Log.e(TAG, "initiateDiscovery: How did you even reach here?");
+
+			return;
+		}
+
+		manager.requestGroupInfo(channel, groupInfoListener);
+	}
 
 	public void requestPeers(Context context, WifiP2pManager.PeerListListener listener) {
 		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -74,5 +85,9 @@ public abstract class RoomManager {
 		}
 
 		manager.requestPeers(channel, listener);
+	}
+
+	public void removeGroup(WifiP2pManager.ActionListener actionListener) {
+		manager.removeGroup(channel, actionListener);
 	}
 }
