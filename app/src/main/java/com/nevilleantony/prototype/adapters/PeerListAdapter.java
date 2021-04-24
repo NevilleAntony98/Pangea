@@ -15,9 +15,14 @@ import java.util.List;
 
 public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHolder> {
 	private List<Peer> peers;
+	private PeerListAdapter.OnPeerClicked onPeerClicked;
 
 	public PeerListAdapter(List<Peer> peers) {
 		this.peers = peers;
+	}
+
+	public void setOnPeerClicked(PeerListAdapter.OnPeerClicked onPeerClicked) {
+		this.onPeerClicked = onPeerClicked;
 	}
 
 	@NonNull
@@ -32,6 +37,9 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
 	@Override
 	public void onBindViewHolder(ViewHolder viewHolder, final int position) {
 		viewHolder.getTextView().setText(peers.get(position).getDisplayName());
+		viewHolder.textView.setOnClickListener(view -> {
+			onPeerClicked.onItemClicked(peers.get(position));
+		});
 	}
 
 	@Override
@@ -51,5 +59,9 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
 		public TextView getTextView() {
 			return textView;
 		}
+	}
+
+	public interface OnPeerClicked {
+		void onItemClicked(Peer peer);
 	}
 }
