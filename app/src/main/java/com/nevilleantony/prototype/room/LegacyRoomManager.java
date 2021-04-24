@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.nevilleantony.prototype.peer.Peer;
