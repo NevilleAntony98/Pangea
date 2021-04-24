@@ -77,6 +77,10 @@ public abstract class RoomManager {
 		manager.requestGroupInfo(channel, groupInfoListener);
 	}
 
+	public void requestConnectionInfo(WifiP2pManager.ConnectionInfoListener connectionInfoListener) {
+		roomManager.manager.requestConnectionInfo(roomManager.channel, connectionInfoListener);
+	}
+
 	public void requestPeers(Context context, WifiP2pManager.PeerListListener listener) {
 		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			Log.e(TAG, "requestPeers: How did you even reach here?");
