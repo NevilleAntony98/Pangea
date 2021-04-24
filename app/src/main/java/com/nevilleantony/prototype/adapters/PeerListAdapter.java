@@ -37,9 +37,11 @@ public class PeerListAdapter extends RecyclerView.Adapter<PeerListAdapter.ViewHo
 	@Override
 	public void onBindViewHolder(ViewHolder viewHolder, final int position) {
 		viewHolder.getTextView().setText(peers.get(position).getDisplayName());
-		viewHolder.textView.setOnClickListener(view -> {
-			onPeerClicked.onItemClicked(peers.get(position));
-		});
+		if (onPeerClicked != null) {
+			viewHolder.textView.setOnClickListener(view -> {
+				onPeerClicked.onItemClicked(peers.get(position));
+			});
+		}
 	}
 
 	@Override
