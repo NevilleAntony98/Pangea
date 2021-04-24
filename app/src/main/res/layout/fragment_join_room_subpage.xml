@@ -15,7 +15,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="30dp"
-        android:text="@string/join_a_group"
+        android:text="@string/join_a_room"
         android:textSize="22sp"
         android:textStyle="bold" />
 
