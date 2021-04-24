@@ -5,24 +5,70 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/new_download_subpage_shape"
     android:orientation="vertical"
-    tools:context=".activities.RoomActivity">
+    android:padding="16dp"
+    tools:context=".activities.NewDownloadActivity">
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/room_view_pager"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-    </androidx.viewpager2.widget.ViewPager2>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/room_bottom_navigation_bar"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:menu="@menu/room_bottom_navigation_menu">
+        android:orientation="horizontal"
+        android:padding="10dp">
 
-    </com.google.android.material.bottomnavigation.BottomNavigationView>
+        <TextView
+            android:id="@+id/room_name_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="fill"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_weight="1"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/sync_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/room_sync" />
+
+    </LinearLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/room_url_text_input_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:hint="@string/url_label"
+        app:endIconDrawable="@drawable/ic_baseline_content_copy_24"
+        app:endIconMode="custom"
+        app:startIconDrawable="@drawable/ic_baseline_insert_link_24">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/room_url_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        android:gravity="center"
+        android:text="@string/room_members"
+        android:textSize="22sp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/peer_list_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
 </LinearLayout>
