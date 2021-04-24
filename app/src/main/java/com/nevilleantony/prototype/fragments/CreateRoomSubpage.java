@@ -102,6 +102,7 @@ public class CreateRoomSubpage extends Fragment {
 		intent.putExtra("url", url);
 		intent.putExtra("room_name", downloadName);
 		intent.putExtra("download_size", downloadSize);
+		intent.putExtra("is_owner", true);
 		startActivity(intent);
 	}
 
