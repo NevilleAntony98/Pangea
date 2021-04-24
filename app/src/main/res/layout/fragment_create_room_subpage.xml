@@ -13,7 +13,6 @@
     tools:context=".fragments.CreateRoomSubpage">
 
     <TextView
-        android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -48,6 +47,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/room_name_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -56,7 +56,7 @@
             app:startIconDrawable="@drawable/ic_baseline_label_24">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/download_name_edit_text"
+                android:id="@+id/room_name_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"

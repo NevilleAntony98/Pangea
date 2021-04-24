@@ -34,7 +34,10 @@ import io.reactivex.rxjava3.disposables.Disposable;
 public class CreateRoomSubpage extends Fragment {
 
 	private final CompositeDisposable compositeDisposable;
-	private TextInputLayout textInputLayout;
+	private TextInputLayout urlTextInput;
+	private TextInputLayout roomNameInput;
+	private TextInputEditText roomNameEditText;
+	private TextInputEditText urlEditText;
 	private Button launchButton;
 	private URLManager.URLProperties urlProperties;
 	private boolean hasLocationPermission = false;
@@ -57,9 +60,10 @@ public class CreateRoomSubpage extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	                         Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_create_room_subpage, container, false);
-		textInputLayout = view.findViewById(R.id.url_text_input_layout);
-		TextInputEditText urlEditText = view.findViewById(R.id.url_edit_text);
-		TextInputEditText downloadNameEditText = view.findViewById(R.id.download_name_edit_text);
+		urlTextInput = view.findViewById(R.id.url_text_input_layout);
+		urlEditText = view.findViewById(R.id.url_edit_text);
+		roomNameInput = view.findViewById(R.id.room_name_input_layout);
+		roomNameEditText = view.findViewById(R.id.room_name_edit_text);
 
 		hasLocationPermission = ContextCompat.checkSelfPermission(requireActivity(),
 				Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
@@ -70,18 +74,25 @@ public class CreateRoomSubpage extends Fragment {
 				return;
 
 			String url = Objects.requireNonNull(urlEditText.getText()).toString();
-			String downloadName = Objects.requireNonNull(downloadNameEditText.getText()).toString();
+			String roomName = Objects.requireNonNull(roomNameEditText.getText()).toString();
 
 			if (!hasLocationPermission) {
 				requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
 			} else {
-				launchRoom(url, downloadName);
+				launchRoom(url, roomName);
 			}
 		});
 
 		Disposable disposable = RxTextView.textChanges(urlEditText)
 				.skipInitialValue()
 				.debounce(500, TimeUnit.MILLISECONDS)
+				.subscribe(this::onTextChangeConsumer);
+
+		compositeDisposable.add(disposable);
+
+		disposable = RxTextView.textChanges(roomNameEditText)
+				.skipInitialValue()
+				.debounce(200, TimeUnit.MILLISECONDS)
 				.subscribe(this::onTextChangeConsumer);
 
 		compositeDisposable.add(disposable);
@@ -109,12 +120,12 @@ public class CreateRoomSubpage extends Fragment {
 	private void onTextChangeConsumer(CharSequence charSequence) {
 		Disposable nestedDisposable;
 
-		if (charSequence.toString().isEmpty()) {
+		if (urlEditText.toString().isEmpty()) {
 			urlProperties = new URLManager.URLProperties(false, false);
 
 			nestedDisposable = Single.fromCallable(() -> {
-				textInputLayout.setError(null);
-				textInputLayout.setHelperText(null);
+				urlTextInput.setError(null);
+				urlTextInput.setHelperText(null);
 				launchButton.setEnabled(false);
 
 				return true;
@@ -127,24 +138,27 @@ public class CreateRoomSubpage extends Fragment {
 			return;
 		}
 
-		nestedDisposable = URLManager.getURLProperties(charSequence.toString())
+		nestedDisposable = URLManager.getURLProperties(Objects.requireNonNull(urlEditText.getText()).toString().trim())
 				.subscribe((urlProperties) -> {
 					if (!urlProperties.isReachable) {
-						textInputLayout.setError(getString(R.string.invalid_unreachable_url));
+						urlTextInput.setError(getString(R.string.invalid_unreachable_url));
 					} else {
-						textInputLayout.setError(null);
+						urlTextInput.setError(null);
 						if (!urlProperties.canAcceptRanges) {
-							textInputLayout.setHelperTextTextAppearance(R.style.warningHelperText);
-							textInputLayout.setHelperText(getString(R.string.partial_download_unsupported));
+							urlTextInput.setHelperTextTextAppearance(R.style.warningHelperText);
+							urlTextInput.setHelperText(getString(R.string.partial_download_unsupported));
 						} else {
-							textInputLayout.setHelperTextTextAppearance(R.style.successHelperText);
-							textInputLayout.setHelperText(getString(R.string.partial_download_supported));
+							urlTextInput.setHelperTextTextAppearance(R.style.successHelperText);
+							urlTextInput.setHelperText(getString(R.string.partial_download_supported));
 						}
 					}
 
 					this.urlProperties = urlProperties;
+					String downloadName = Objects.requireNonNull(roomNameEditText.getText()).toString().trim();
+					roomNameInput.setError(downloadName.isEmpty() ? getString(R.string.non_empty_room_name_required) :
+							null);
 
-					launchButton.setEnabled(urlProperties.isReachable);
+					launchButton.setEnabled(urlProperties.isReachable && !downloadName.isEmpty());
 				});
 
 		compositeDisposable.add(nestedDisposable);
