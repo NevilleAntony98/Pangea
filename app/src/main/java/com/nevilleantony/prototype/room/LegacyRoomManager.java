@@ -19,24 +19,26 @@ public class LegacyRoomManager extends RoomManager {
 	}
 
 	@Override
-	public void connect(AppCompatActivity context, Peer peer) {
+	public void connect(Context context, Peer peer, boolean isCallerOwner) {
 		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			Log.e(TAG, "connect: How did you even get here?");
 
 			return;
 		}
 
-		manager.createGroup(channel, new WifiP2pManager.ActionListener() {
-			@Override
-			public void onSuccess() {
+		if (isCallerOwner) {
+			manager.createGroup(channel, new WifiP2pManager.ActionListener() {
+				@Override
+				public void onSuccess() {
 
-			}
+				}
 
-			@Override
-			public void onFailure(int reason) {
+				@Override
+				public void onFailure(int reason) {
 
-			}
-		});
+				}
+			});
+		}
 	}
 }
 
