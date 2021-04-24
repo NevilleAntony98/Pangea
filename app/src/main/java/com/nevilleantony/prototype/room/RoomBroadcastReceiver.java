@@ -92,7 +92,7 @@ public class RoomBroadcastReceiver extends BroadcastReceiver {
 			NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 			if (networkInfo != null && networkInfo.isConnected()) {
 
-				roomManager.manager.requestConnectionInfo(roomManager.channel, info -> {
+				roomManager.requestConnectionInfo(info -> {
 					if (info.groupFormed) {
 						roomManager.requestGroupInfo(context, groupInfo -> {
 							WifiP2pDevice owner = groupInfo.getOwner();
