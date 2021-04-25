@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.nevilleantony.prototype.R;
-import com.nevilleantony.prototype.peer.Peer;
+import com.nevilleantony.prototype.room.Peer;
 
 import java.util.List;
 

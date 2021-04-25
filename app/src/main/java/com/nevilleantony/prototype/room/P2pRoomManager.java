@@ -9,8 +9,6 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
-import com.nevilleantony.prototype.peer.Peer;
-
 public class P2pRoomManager extends RoomManager {
 	private static final int OWNER = 15;
 	private static final int CLIENT = 0;

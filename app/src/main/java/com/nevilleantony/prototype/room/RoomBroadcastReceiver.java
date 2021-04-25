@@ -11,8 +11,6 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.nevilleantony.prototype.peer.Peer;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
