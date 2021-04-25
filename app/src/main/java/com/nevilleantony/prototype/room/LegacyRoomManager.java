@@ -8,8 +8,6 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
-import com.nevilleantony.prototype.peer.Peer;
-
 public class LegacyRoomManager extends RoomManager {
 	private static final String TAG = "LegacyRoomManager";
 

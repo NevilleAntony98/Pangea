@@ -16,8 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.activities.RoomActivity;
 import com.nevilleantony.prototype.adapters.PeerListAdapter;
-import com.nevilleantony.prototype.peer.DefaultPeer;
-import com.nevilleantony.prototype.peer.Peer;
+import com.nevilleantony.prototype.room.Peer;
 import com.nevilleantony.prototype.room.RoomBroadcastReceiver;
 import com.nevilleantony.prototype.room.RoomManager;
 
@@ -61,7 +60,7 @@ public class JoinRoomSubpage extends Fragment {
 		serviceRequest = roomManager.addServiceRequest(getContext());
 		roomManager.setOnRoomDiscovered((roomName, device) -> {
 			List<Peer> peers = Peer.getPeerList(new ArrayList<>());
-			Peer roomPeer = new DefaultPeer(device);
+			Peer roomPeer = new Peer(device);
 			roomPeer.setDisplayName(roomName);
 			peers.add(roomPeer);
 			PeerListAdapter peerListAdapter = new PeerListAdapter(peers);

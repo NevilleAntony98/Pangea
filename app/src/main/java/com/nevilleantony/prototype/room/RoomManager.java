@@ -13,8 +13,6 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
-import com.nevilleantony.prototype.peer.Peer;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
