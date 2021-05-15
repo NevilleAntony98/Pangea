@@ -2,8 +2,10 @@ package com.nevilleantony.prototype.utils;
 
 import android.annotation.SuppressLint;
 
+import java.security.MessageDigest;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.UUID;
 
 public class Utils {
 	@SuppressLint("DefaultLocale")
@@ -20,5 +22,9 @@ public class Utils {
 		}
 		value *= Long.signum(bytes);
 		return String.format("%.1f %ciB", value / 1024.0, characterIterator.current());
+	}
+
+	public static String getDigest(String data) {
+		return UUID.nameUUIDFromBytes(data.getBytes()).toString();
 	}
 }
