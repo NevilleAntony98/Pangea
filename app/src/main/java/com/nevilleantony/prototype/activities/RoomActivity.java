@@ -6,7 +6,9 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,13 +21,20 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.adapters.PeerListAdapter;
+import com.nevilleantony.prototype.room.MessageType;
 import com.nevilleantony.prototype.room.Peer;
 import com.nevilleantony.prototype.room.RoomBroadcastReceiver;
+import com.nevilleantony.prototype.room.RoomClient;
 import com.nevilleantony.prototype.room.RoomManager;
+import com.nevilleantony.prototype.room.RoomServer;
+import com.nevilleantony.prototype.utils.Utils;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -39,12 +48,17 @@ public class RoomActivity extends AppCompatActivity {
 
 	private final CompositeDisposable disposables;
 	private URL url;
-	private String roomName;
 	private String downloadSize;
 	private boolean isOwner;
 	private RoomManager roomManager;
 	private RoomBroadcastReceiver broadcastReceiver;
 	private RecyclerView peerListRecyclerView;
+	private TextInputEditText urlTextEditText;
+	private TextInputLayout urlTextInputLayout;
+	private RoomServer roomServer;
+	private RoomClient roomClient;
+	private String ownerName;
+	private Handler handler;
 
 	public RoomActivity() {
 		disposables = new CompositeDisposable();
@@ -59,7 +73,7 @@ public class RoomActivity extends AppCompatActivity {
 		broadcastReceiver = new RoomBroadcastReceiver(roomManager, this);
 
 		isOwner = getIntent().getBooleanExtra("is_owner", false);
-		roomName = getIntent().getStringExtra("room_name");
+		String roomName = getIntent().getStringExtra("room_name");
 		if (isOwner) {
 			try {
 				url = new URL(getIntent().getStringExtra("url"));
@@ -71,6 +85,25 @@ public class RoomActivity extends AppCompatActivity {
 			downloadSize = getIntent().getStringExtra("download_size");
 
 			roomManager.registerService(this, roomName);
+
+			broadcastReceiver.setOnGroupFormed(owner -> {
+				Log.d(TAG, "Group has been formed");
+
+				try {
+					roomServer = new RoomServer();
+					roomServer.start();
+				} catch (IOException e) {
+					Log.d(TAG, "Failed to start create room server");
+					e.printStackTrace();
+				}
+			});
+		} else {
+			broadcastReceiver.setOnGroupJoined(owner -> {
+				ownerName = owner.deviceName;
+				handler = new Handler(getMainLooper());
+				roomClient = new RoomClient(this::onSocketResponse);
+				roomClient.start();
+			});
 		}
 
 		roomManager.initiateDiscovery(this, new WifiP2pManager.ActionListener() {
@@ -96,16 +129,35 @@ public class RoomActivity extends AppCompatActivity {
 		peerListRecyclerView = findViewById(R.id.peer_list_recycler_view);
 		peerListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 		peerListRecyclerView.setAdapter(new PeerListAdapter(new ArrayList<>()));
-		broadcastReceiver.setOnMembersChanged(this::updatePeerList);
+		if (isOwner) {
+			// WifiP2PManager informs clients only to group owner so no point in listening to member changes
+			// in client devices
+			broadcastReceiver.setOnMembersChanged(this::updatePeerList);
+		}
 
 		Button syncButton = findViewById(R.id.sync_button);
-		syncButton.setEnabled(isOwner);
+		syncButton.setVisibility(isOwner ? View.VISIBLE : View.INVISIBLE);
+		syncButton.setOnClickListener(v -> {
+			String url = urlTextEditText.getText().toString();
+			String urlDigest = Utils.getDigest(String.format("%s %s", Calendar.getInstance().getTime(), url));
+			// TODO: Calculate range
+			String range = "0-0";
+
+			List<String> payload = new ArrayList<>();
+			payload.add(url);
+			payload.add(urlDigest);
+			payload.add(downloadSize);
+			payload.add(range);
+
+			String encodedPayload = MessageType.encodeList(payload);
+			roomServer.broadcastMessage(MessageType.ROOM_SYNC, encodedPayload);
+		});
 
 		TextView roomLabelTextView = findViewById(R.id.room_name_text_view);
 		roomLabelTextView.setText(roomName);
 
-		TextInputEditText urlTextEditText = findViewById(R.id.room_url_edit_text);
-		TextInputLayout urlTextInputLayout = findViewById(R.id.room_url_text_input_layout);
+		urlTextEditText = findViewById(R.id.room_url_edit_text);
+		urlTextInputLayout = findViewById(R.id.room_url_text_input_layout);
 		urlTextInputLayout.setEndIconOnClickListener((v) -> {
 			ClipboardManager clipboardManager =
 					(ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
@@ -121,20 +173,49 @@ public class RoomActivity extends AppCompatActivity {
 	}
 
 	private void subscribePeerUpdate() {
-		disposables.add(Observable.interval(REFRESH_INTERVAL_SECONDS, TimeUnit.SECONDS)
-				.observeOn(AndroidSchedulers.mainThread())
-				.subscribe(aLong -> {
-					if (roomManager != null && peerListRecyclerView != null) {
-						Log.d(TAG, "Periodic refresh");
-						roomManager.requestGroupMembers(getContext(), this::updatePeerList);
-					}
-				}));
+		// requestGroupInfo can work only in group owner devices
+		if (isOwner) {
+			disposables.add(Observable.interval(REFRESH_INTERVAL_SECONDS, TimeUnit.SECONDS)
+					.observeOn(AndroidSchedulers.mainThread())
+					.subscribe(aLong -> {
+						if (roomManager != null && peerListRecyclerView != null) {
+							roomManager.requestGroupMembers(getContext(), this::updatePeerList);
+						}
+					}));
+		}
 	}
 
 	private void updatePeerList(List<Peer> peerList) {
 		Log.d(TAG, "Member list updated");
 		PeerListAdapter adapter = new PeerListAdapter(peerList);
 		peerListRecyclerView.setAdapter(adapter);
+
+		if (isOwner && roomServer != null && roomServer.isRunning()) {
+			roomServer.broadcastMessage(MessageType.ROOM_MEMBER_UPDATE,
+					MessageType.encodeList(peerList));
+		}
+	}
+
+	private void onSocketResponse(MessageType messageType, String message) {
+		if (handler != null) {
+			handler.post(() -> {
+				if (messageType == MessageType.ROOM_MEMBER_UPDATE) {
+					ArrayList<String> peers = new ArrayList<>(Arrays.asList(MessageType.decodeList(message)));
+					// Must append owners name since member list will not contain owners name
+					peers.add(ownerName + " (Owner)");
+					updatePeerList(Peer.getDummyPeerList(peers));
+				} else if (messageType == MessageType.ROOM_SYNC) {
+					String[] urlDetails = MessageType.decodeList(message);
+					String url = urlDetails[0];
+					String urlHash = urlDetails[1];
+					String totalSize = urlDetails[2];
+					String range = urlDetails[3];
+
+					urlTextEditText.setText(url);
+					urlTextInputLayout.setHelperText(totalSize);
+				}
+			});
+		}
 	}
 
 	@Override
@@ -155,27 +236,45 @@ public class RoomActivity extends AppCompatActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 
-		roomManager.requestConnectionInfo(connectionInfo -> {
-			if (connectionInfo.groupFormed) {
-				roomManager.removeGroup(new WifiP2pManager.ActionListener() {
-					@Override
-					public void onSuccess() {
-						Log.d(TAG, "Group removed successfully");
-					}
+		if (roomManager.manager != null) {
+			roomManager.requestGroupInfo(getContext(), group -> {
+				if (group != null && roomManager.manager != null && roomManager.channel != null)
+					roomManager.removeGroup(new WifiP2pManager.ActionListener() {
+						@Override
+						public void onSuccess() {
+							Log.d(TAG, "Group removed successfully");
+						}
 
-					@Override
-					public void onFailure(int reason) {
-						Log.d(TAG, "Group removal failed. Reason: " + reason);
-					}
-				});
+						@Override
+						public void onFailure(int reason) {
+							Log.d(TAG, "Group removal failed. Reason: " + reason);
+						}
+					});
+			});
+		}
 
+		if (roomServer != null) {
+			try {
+				roomServer.tearDown();
+			} catch (IOException e) {
+				Log.d(TAG, "Failed to tear down server");
+				e.printStackTrace();
 			}
-		});
+		}
+
+		if (roomClient != null) {
+			try {
+				roomClient.tearDown();
+			} catch (IOException e) {
+				Log.d(TAG, "Failed to tear down client");
+				e.printStackTrace();
+			}
+		}
 
 		disposables.dispose();
 	}
 
 	private Context getContext() {
-		return (Context) this;
+		return this;
 	}
 }
