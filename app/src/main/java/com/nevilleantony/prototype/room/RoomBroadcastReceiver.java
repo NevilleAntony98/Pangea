@@ -55,7 +55,7 @@ public class RoomBroadcastReceiver extends BroadcastReceiver {
 			// Respond to new connection or disconnections
 			Log.d(TAG, "Peer connections changed");
 
-			if (roomManager == null || onMembersChanged == null) {
+			if (roomManager == null) {
 				return;
 			}
 
@@ -70,32 +70,11 @@ public class RoomBroadcastReceiver extends BroadcastReceiver {
 							Peer.logPeerList(deviceList);
 							List<Peer> peers = Peer.getPeerList(deviceList);
 
-							onMembersChanged.call(peers);
-						});
-					}
-				});
-			} else {
-				// Last member left causing group to be destroyed, so pass an empty list.
-				onMembersChanged.call(new ArrayList<>());
-			}
+							if (onMembersChanged != null) {
+								onMembersChanged.call(peers);
+							}
 
-		} else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-			// Respond to this device's wifi state changing
-			Log.d(TAG, "This device connection changed");
-
-			if (roomManager == null || onGroupJoined == null) {
-				return;
-			}
-
-			NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
-			if (networkInfo != null && networkInfo.isConnected()) {
-
-				roomManager.requestConnectionInfo(info -> {
-					if (info.groupFormed) {
-						roomManager.requestGroupInfo(context, groupInfo -> {
 							WifiP2pDevice owner = groupInfo.getOwner();
-							Log.d(TAG, "isOwner: " + groupInfo.isGroupOwner());
-
 							if (onGroupFormed != null && info.isGroupOwner) {
 								Log.d(TAG, "This device connected as owner");
 								onGroupFormed.call(owner);
@@ -106,7 +85,16 @@ public class RoomBroadcastReceiver extends BroadcastReceiver {
 						});
 					}
 				});
+			} else {
+				// Last member left causing group to be destroyed, so pass an empty list.
+				if (onMembersChanged != null) {
+					onMembersChanged.call(new ArrayList<>());
+				}
 			}
+
+		} else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
+			// Respond to this device's wifi state changing
+			Log.d(TAG, "This device connection changed");
 		}
 	}
 
