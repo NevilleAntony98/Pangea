@@ -4,11 +4,13 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class Peer {
+public class Peer implements CharSequence {
 	public final WifiP2pDevice device;
 	private String displayName;
 
@@ -32,6 +34,17 @@ public class Peer {
 		}
 
 		return peers;
+	}
+
+	public static List<Peer> getDummyPeerList(List<String> memberNames) {
+		List<Peer> peerList = new ArrayList<>();
+		for (String name : memberNames) {
+			Peer peer = new Peer(new WifiP2pDevice());
+			peer.setDisplayName(name);
+			peerList.add(peer);
+		}
+
+		return peerList;
 	}
 
 	public static void logPeerList(WifiP2pDeviceList deviceList) {
@@ -66,5 +79,27 @@ public class Peer {
 
 	public boolean isGroupOwner() {
 		return device.isGroupOwner();
+	}
+
+	@Override
+	public int length() {
+		return getDisplayName().length();
+	}
+
+	@Override
+	public char charAt(int index) {
+		return getDisplayName().charAt(index);
+	}
+
+	@NonNull
+	@Override
+	public CharSequence subSequence(int start, int end) {
+		return getDisplayName().subSequence(start, end);
+	}
+
+	@NonNull
+	@Override
+	public String toString() {
+		return getDisplayName();
 	}
 }
