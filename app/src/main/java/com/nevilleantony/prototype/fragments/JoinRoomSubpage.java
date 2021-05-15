@@ -1,5 +1,6 @@
 package com.nevilleantony.prototype.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
@@ -47,12 +48,18 @@ public class JoinRoomSubpage extends Fragment {
 		roomManager.initiateDiscovery(getContext(), new WifiP2pManager.ActionListener() {
 			@Override
 			public void onSuccess() {
-				Toast.makeText(getContext(), "discovery started", Toast.LENGTH_SHORT).show();
+				Context context = getContext();
+				if (context != null) {
+					Toast.makeText(getContext(), "discovery started", Toast.LENGTH_SHORT).show();
+				}
 			}
 
 			@Override
 			public void onFailure(int reason) {
-				Toast.makeText(getContext(), "discovery failed", Toast.LENGTH_SHORT).show();
+				Context context = getContext();
+				if (context != null) {
+					Toast.makeText(getContext(), "discovery failed", Toast.LENGTH_SHORT).show();
+				}
 			}
 		});
 
