@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -60,6 +59,7 @@ public class RoomActivity extends AppCompatActivity {
 	private RoomServer roomServer;
 	private RoomClient roomClient;
 	private String ownerName;
+	private String thisDeviceName;
 	private Handler handler;
 
 	public RoomActivity() {
@@ -73,6 +73,14 @@ public class RoomActivity extends AppCompatActivity {
 
 		roomManager = RoomManager.getInstance(this);
 		broadcastReceiver = new RoomBroadcastReceiver(roomManager, this);
+		broadcastReceiver.setOnThisDeviceChanged(device -> {
+			thisDeviceName = device.deviceName;
+
+			// Trigger a fake update if in owner device
+			if (isOwner) {
+				updatePeerList(new ArrayList<>());
+			}
+		});
 
 		isOwner = getIntent().getBooleanExtra("is_owner", false);
 		String roomName = getIntent().getStringExtra("room_name");
@@ -189,12 +197,24 @@ public class RoomActivity extends AppCompatActivity {
 
 	private void updatePeerList(List<Peer> peerList) {
 		Log.d(TAG, "Member list updated");
-		PeerListAdapter adapter = new PeerListAdapter(peerList);
+		List<Peer> fullList = new ArrayList<>(peerList);
+		if (isOwner) {
+			Peer peer = new Peer(new WifiP2pDevice());
+			if (thisDeviceName != null && !thisDeviceName.isEmpty()) {
+				peer.setDisplayName(String.format("%s %s", thisDeviceName, "(Owner)"));
+			} else {
+				peer.setDisplayName("Owner");
+			}
+
+			fullList.add(0, peer);
+		}
+
+		PeerListAdapter adapter = new PeerListAdapter(fullList);
 		peerListRecyclerView.setAdapter(adapter);
 
 		if (isOwner && roomServer != null && roomServer.isRunning()) {
 			roomServer.broadcastMessage(MessageType.ROOM_MEMBER_UPDATE,
-					MessageType.encodeList(peerList));
+					MessageType.encodeList(fullList));
 		}
 	}
 
@@ -203,8 +223,6 @@ public class RoomActivity extends AppCompatActivity {
 			handler.post(() -> {
 				if (messageType == MessageType.ROOM_MEMBER_UPDATE) {
 					ArrayList<String> peers = new ArrayList<>(Arrays.asList(MessageType.decodeList(message)));
-					// Must append owners name since member list will not contain owners name
-					peers.add(ownerName + " (Owner)");
 					updatePeerList(Peer.getDummyPeerList(peers));
 				} else if (messageType == MessageType.ROOM_SYNC) {
 					String[] urlDetails = MessageType.decodeList(message);

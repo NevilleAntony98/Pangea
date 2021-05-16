@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -19,7 +18,7 @@ public class RoomBroadcastReceiver extends BroadcastReceiver {
 	private static final String TAG = "RoomBroadcastReceiver";
 	private final RoomManager roomManager;
 	private final Activity activity;
-	private OnPeersChanged onPeersChanged;
+	private OnThisDeviceChanged onThisDeviceChanged;
 	private OnGroupFormed onGroupFormed;
 	private OnGroupJoined onGroupJoined;
 	private OnMembersChanged onMembersChanged;
@@ -47,9 +46,6 @@ public class RoomBroadcastReceiver extends BroadcastReceiver {
 		} else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
 			// Call WifiP2pManager.requestPeers() to get a list of current peers
 			Log.d(TAG, "Peers changed");
-			if (roomManager != null && onPeersChanged != null) {
-				roomManager.requestPeers(context, peers -> onPeersChanged.call(peers));
-			}
 
 		} else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
 			// Respond to new connection or disconnections
@@ -59,7 +55,7 @@ public class RoomBroadcastReceiver extends BroadcastReceiver {
 				return;
 			}
 
-			NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+			NetworkInfo networkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 			if (networkInfo != null && networkInfo.isConnected()) {
 				Log.d(TAG, "Connected to a group");
 				roomManager.manager.requestConnectionInfo(roomManager.channel, info -> {
@@ -95,6 +91,10 @@ public class RoomBroadcastReceiver extends BroadcastReceiver {
 		} else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 			// Respond to this device's wifi state changing
 			Log.d(TAG, "This device connection changed");
+			WifiP2pDevice thisDevice = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+			if (thisDevice != null && onThisDeviceChanged != null) {
+				onThisDeviceChanged.call(thisDevice);
+			}
 		}
 	}
 
@@ -102,8 +102,8 @@ public class RoomBroadcastReceiver extends BroadcastReceiver {
 		this.onGroupFormed = onGroupFormed;
 	}
 
-	public void setOnPeersChanged(OnPeersChanged onPeersChanged) {
-		this.onPeersChanged = onPeersChanged;
+	public void setOnThisDeviceChanged(OnThisDeviceChanged onThisDeviceChanged) {
+		this.onThisDeviceChanged = onThisDeviceChanged;
 	}
 
 	public void setOnGroupJoined(OnGroupJoined onGroupJoined) {
@@ -122,8 +122,8 @@ public class RoomBroadcastReceiver extends BroadcastReceiver {
 		activity.unregisterReceiver(this);
 	}
 
-	public interface OnPeersChanged {
-		void call(WifiP2pDeviceList deviceList);
+	public interface OnThisDeviceChanged {
+		void call(WifiP2pDevice device);
 	}
 
 	public interface OnGroupFormed {
