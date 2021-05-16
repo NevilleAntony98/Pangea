@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -138,7 +140,7 @@ public class RoomActivity extends AppCompatActivity {
 		Button syncButton = findViewById(R.id.sync_button);
 		syncButton.setVisibility(isOwner ? View.VISIBLE : View.INVISIBLE);
 		syncButton.setOnClickListener(v -> {
-			String url = urlTextEditText.getText().toString();
+			String url = Objects.requireNonNull(urlTextEditText.getText()).toString();
 			String urlDigest = Utils.getDigest(String.format("%s %s", Calendar.getInstance().getTime(), url));
 			// TODO: Calculate range
 			String range = "0-0";
@@ -168,7 +170,7 @@ public class RoomActivity extends AppCompatActivity {
 
 		if (isOwner) {
 			urlTextEditText.setText(url.toString());
-			urlTextInputLayout.setHelperText(downloadSize);
+			urlTextInputLayout.setHelperText(Utils.getHumanReadableSize(Long.parseLong(downloadSize)));
 		}
 	}
 
@@ -212,7 +214,7 @@ public class RoomActivity extends AppCompatActivity {
 					String range = urlDetails[3];
 
 					urlTextEditText.setText(url);
-					urlTextInputLayout.setHelperText(totalSize);
+					urlTextInputLayout.setHelperText(Utils.getHumanReadableSize(Long.parseLong(totalSize)));
 				}
 			});
 		}

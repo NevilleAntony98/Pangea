@@ -13,7 +13,7 @@ public enum MessageType {
 	ROOM_SYNC message will contain:
 		[0] The URL itself
 		[1] Unique hash of the URL
-		[2] Total download size in human readable format
+		[2] Total download size in bytes
 		[3] Range (same format as in http) assigned to current device
 	separated by the delimiter
 	*/
