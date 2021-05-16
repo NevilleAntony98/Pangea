@@ -107,7 +107,7 @@ public class CreateRoomSubpage extends Fragment {
 	}
 
 	private void launchRoom(String url, String downloadName) {
-		String downloadSize = Utils.getHumanReadableSize(urlProperties.getContentLength());
+		String downloadSize = Long.toString(urlProperties.getContentLength());
 
 		Intent intent = new Intent(getActivity(), RoomActivity.class);
 		intent.putExtra("url", url);
