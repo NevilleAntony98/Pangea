@@ -27,6 +27,8 @@ import com.nevilleantony.prototype.room.RoomBroadcastReceiver;
 import com.nevilleantony.prototype.room.RoomClient;
 import com.nevilleantony.prototype.room.RoomManager;
 import com.nevilleantony.prototype.room.RoomServer;
+import com.nevilleantony.prototype.room.SyncManager;
+import com.nevilleantony.prototype.utils.Range;
 import com.nevilleantony.prototype.utils.Utils;
 
 import java.io.IOException;
@@ -156,17 +158,24 @@ public class RoomActivity extends AppCompatActivity {
 
 			String url = Objects.requireNonNull(urlTextEditText.getText()).toString();
 			String urlDigest = Utils.getDigest(String.format("%s %s", Calendar.getInstance().getTime(), url));
-			// TODO: Calculate range
-			String range = "0-0";
 
-			List<String> payload = new ArrayList<>();
-			payload.add(url);
-			payload.add(urlDigest);
-			payload.add(downloadSize);
-			payload.add(range);
+			long nPeers = adapter.getItemCount();
+			List<Range> ranges = SyncManager.getRanges(Long.parseLong(downloadSize), nPeers);
+			// Removes a range from list to be assigned to this device
+			Range myRange = ranges.remove(ranges.size() - 1);
+			List<String> uniqueMessages = new ArrayList<>();
 
-			String encodedPayload = MessageType.encodeList(payload);
-			roomServer.broadcastMessage(MessageType.ROOM_SYNC, encodedPayload);
+			for (Range range : ranges) {
+				List<String> payload = new ArrayList<>();
+				payload.add(url);
+				payload.add(urlDigest);
+				payload.add(downloadSize);
+				payload.add(range.toString());
+
+				uniqueMessages.add(MessageType.encodeList(payload));
+			}
+
+			roomServer.distributeMessage(MessageType.ROOM_SYNC, uniqueMessages);
 		});
 
 		TextView roomLabelTextView = findViewById(R.id.room_name_text_view);
