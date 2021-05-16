@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,6 +51,18 @@ public class RoomServer {
 		Log.d(TAG, "Broadcasting message of type: " + messageType);
 		for (ClientHandler clientHandler : clientHandlerMap.values()) {
 			clientHandler.sendMessage(messageType, message);
+		}
+	}
+
+	public void distributeMessage(MessageType messageType, List<String> messages) throws IllegalStateException {
+		if (clientHandlerMap.size() != messages.size()) {
+			throw new IllegalStateException(String.format("Number of messages and clients are not equal: %s vs %s",
+					messages.size(), clientHandlerMap.size()));
+		}
+
+		int index = 0;
+		for (ClientHandler clientHandler : clientHandlerMap.values()) {
+			clientHandler.sendMessage(messageType, messages.get(index++));
 		}
 	}
 
