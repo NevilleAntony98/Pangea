@@ -148,6 +148,12 @@ public class RoomActivity extends AppCompatActivity {
 		Button syncButton = findViewById(R.id.sync_button);
 		syncButton.setVisibility(isOwner ? View.VISIBLE : View.INVISIBLE);
 		syncButton.setOnClickListener(v -> {
+			PeerListAdapter adapter = (PeerListAdapter) peerListRecyclerView.getAdapter();
+			if (adapter == null || adapter.getItemCount() < 2) {
+				Toast.makeText(this, "No members to sync url details", Toast.LENGTH_SHORT).show();
+				return;
+			}
+
 			String url = Objects.requireNonNull(urlTextEditText.getText()).toString();
 			String urlDigest = Utils.getDigest(String.format("%s %s", Calendar.getInstance().getTime(), url));
 			// TODO: Calculate range
