@@ -6,23 +6,21 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {DownloadsModel.class}, version = 1)
-public abstract class DownloadsDatabase extends RoomDatabase{
-    public abstract DownloadsDao getDoa();
-    public static DownloadsDatabase dwld_db;
 
-    public static DownloadsDatabase getInstance(Context context){
-        if(dwld_db == null){
-            dwld_db = buildDatabaseInstance(context);
+@Database(entities = {DownloadsModel.class}, version = 1, exportSchema = false)
+public abstract class DownloadsDatabase extends RoomDatabase {
+    public static DownloadsDatabase downloadDb;
+
+    public static DownloadsDatabase getInstance(Context context) {
+        if (downloadDb == null) {
+            downloadDb = Room.databaseBuilder(context, DownloadsDatabase.class, "Sample").allowMainThreadQueries().build();
         }
-        return dwld_db;
+        return downloadDb;
     }
 
-    public static DownloadsDatabase buildDatabaseInstance(Context context){
-        return Room.databaseBuilder(context, DownloadsDatabase.class, "Sample.db").allowMainThreadQueries().build();
-    }
+    public abstract DownloadsDao getDoa();
 
-    public void cleanUp(){
-        dwld_db = null;
+    public void cleanUp() {
+        downloadDb = null;
     }
 }
