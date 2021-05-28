@@ -78,6 +78,8 @@ public class CreateRoomSubpage extends Fragment {
 
 			if (!hasLocationPermission) {
 				requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+			} else if (!Utils.isLocationEnabled(getContext())) {
+				Utils.tryRequestLocation(getContext());
 			} else {
 				launchRoom(url, roomName);
 			}
