@@ -165,12 +165,14 @@ public class RoomActivity extends AppCompatActivity {
 			Range myRange = ranges.remove(ranges.size() - 1);
 			List<String> uniqueMessages = new ArrayList<>();
 
+			long partNumber = 0;
 			for (Range range : ranges) {
 				List<String> payload = new ArrayList<>();
 				payload.add(url);
 				payload.add(urlDigest);
 				payload.add(downloadSize);
 				payload.add(range.toString());
+				payload.add(Long.toString(partNumber++));
 
 				uniqueMessages.add(MessageType.encodeList(payload));
 			}
@@ -245,6 +247,7 @@ public class RoomActivity extends AppCompatActivity {
 					String urlHash = urlDetails[1];
 					String totalSize = urlDetails[2];
 					String range = urlDetails[3];
+					String partNumber = urlDetails[4];
 
 					urlTextEditText.setText(url);
 					urlTextInputLayout.setHelperText(Utils.getHumanReadableSize(Long.parseLong(totalSize)));
