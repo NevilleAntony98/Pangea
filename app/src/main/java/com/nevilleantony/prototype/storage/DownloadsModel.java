@@ -2,7 +2,6 @@ package com.nevilleantony.prototype.storage;
 
 import androidx.annotation.NonNull;
 
-//https://github.com/googlecodelabs/android-room-with-a-view/tree/master/app/src/main/java/com/example/android/roomwordssample
 @androidx.room.Entity(tableName = "downloads", primaryKeys = {"id", "range"})
 public class DownloadsModel {
     //hash of the file_url + timestamp
