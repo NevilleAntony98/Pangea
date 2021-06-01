@@ -41,6 +41,9 @@ public interface DownloadsDao {
     @Query("update downloads set max_range = :maxRange where id = :groupId and range = :fileRange")
     Completable updateMaxRange(String groupId, Long fileRange, Long maxRange);
 
+    @Query("Select DISTINCT id, file_name from downloads")
+    Single<List<NameId>> retrieveNameId();
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable insertDownloads(DownloadsModel downloads);
 
@@ -50,6 +53,11 @@ public interface DownloadsDao {
     class RangeTuple {
         public Long min_range;
         public Long max_range;
+    }
+
+    class NameId {
+        public String id;
+        public String file_name;
     }
 }
 
