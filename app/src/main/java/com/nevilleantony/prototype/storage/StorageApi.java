@@ -18,6 +18,7 @@ public class StorageApi {
     private String downloadModelFileUrl;
     private Long downloadModelSize;
     private DownloadsDao.RangeTuple rangeTuple;
+    List<Long> availParts;
 
     public String insertRow(Context context, String id, String file_url, String file_name, Long range, Long min_range, Long max_range, Long size) {
         db = DownloadsDatabase.getInstance(context);
@@ -92,5 +93,24 @@ public class StorageApi {
             }
         });
         return downloadsModels;
+    }
+
+    public String insertAvailDownload(Context context, String groupid, Long part){
+        db = DownloadsDatabase.getInstance(context);
+        AvailableDownloadsModel file = new AvailableDownloadsModel(groupid, part);
+        db.getavaildao().insertAvailDownloads(file).subscribe();
+        return SUCCESS_MESSAGE;
+    }
+
+    public List<Long> retriveParts(Context context, String groupid){
+        db = DownloadsDatabase.getInstance(context);
+        db.getavaildao().retrieveParts(groupid).subscribe(new Consumer<List<Long>>() {
+            @Override
+            public void accept(List<Long> parts) throws Throwable {
+                Log.d("PART_NUM", parts.toString());
+                availParts = parts;
+            }
+        });
+        return availParts;
     }
 }
