@@ -27,7 +27,7 @@ public class DownloadService extends Service {
 
     @Override
     public void onCreate() {
-        Log.d(TAG, "Creating");
+        Log.d(TAG, "onCreate");
     }
 
     @Override
@@ -40,28 +40,29 @@ public class DownloadService extends Service {
         fileDownload.addOnStateChangedCallback(new FileDownload.OnStateChangedCallback() {
             @Override
             public void onDownloadStarted() {
-                Log.d(TAG, "Started");
+                Log.d(TAG, "Download Resumed/Started");
                 if (notification.actions != null) {
-                    notification.actions[0] = new Notification.Action(android.R.drawable.ic_media_pause, "Pause", actionIntent);
+                    notification.actions[0].title = "Pause";
                     notificationManager.notify(NOTIFICATION_ID, notification);
                 }
             }
 
             @Override
             public void onDownloadPaused(int progress) {
-                notification.actions[0] = new Notification.Action(android.R.drawable.ic_media_play, "Play", actionIntent);
+                Log.d(TAG, "Download Paused");
+                notification.actions[0].title = "Resume";
                 notificationManager.notify(NOTIFICATION_ID, notification);
             }
 
             @Override
             public void onDownloadComplete() {
-                Log.d(TAG, "Completed");
+                stopSelf();
+                Log.d(TAG, "Download Completed");
             }
 
             @Override
             public void onProgressChanged(int progress) {
-                notificationBuilder
-                        .setProgress(100, progress, false);
+                notificationBuilder.setProgress(100, progress, false);
                 notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
             }
         });
@@ -105,7 +106,8 @@ public class DownloadService extends Service {
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle("Download")
                 .setProgress(0, 0, false)
-                .addAction(android.R.drawable.ic_media_pause, "Pause", actionIntent);
+                .addAction(android.R.drawable.ic_media_pause, "Pause", actionIntent)
+                .setOnlyAlertOnce(true);
         notification = notificationBuilder.build();
         startForeground(NOTIFICATION_ID, notification);
     }
