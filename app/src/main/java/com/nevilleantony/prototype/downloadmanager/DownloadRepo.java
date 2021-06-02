@@ -9,33 +9,35 @@ import com.nevilleantony.prototype.storage.StorageApi;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
 public class DownloadRepo {
     private static final String PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Prototype/";
     private static DownloadRepo downloadRepo = null;
-    private Map<String, FileDownload> downloadMap = new HashMap<>();
-    private StorageApi stgApi = new StorageApi();
+    private final Map<String, FileDownload> downloadMap = new HashMap<>();
+    private final StorageApi stgApi;
 
     private DownloadRepo(Context context) {
+        stgApi = StorageApi.getInstance(context);
+
         File path = new File(PATH);
         if (!path.exists()) {
             path.mkdir();
         }
-        List<DownloadsModel> downloadsModelList = stgApi.getAll(context);
-        for (DownloadsModel model : downloadsModelList) {
-            FileDownload fileDownload = new FileDownload(
-                    model.getId(),
-                    model.getFile_url(),
-                    model.getRange(),
-                    model.getMin_range(),
-                    model.getMax_range(),
-                    model.getSize()
-            );
-            downloadMap.put(model.getId(), fileDownload);
-        }
+        stgApi.getAll(downloadsModelList -> {
+            for (DownloadsModel model : downloadsModelList) {
+                FileDownload fileDownload = new FileDownload(
+                        model.getId(),
+                        model.getFile_url(),
+                        model.getRange(),
+                        model.getMin_range(),
+                        model.getMax_range(),
+                        model.getSize()
+                );
+                downloadMap.put(model.getId(), fileDownload);
+            }
+        });
     }
 
     public static DownloadRepo getInstance(Context context) {
@@ -63,7 +65,6 @@ public class DownloadRepo {
     }
 
     public FileDownload createFileDownload(
-            Context context,
             String groupId,
             String url,
             String fileName,
@@ -73,7 +74,6 @@ public class DownloadRepo {
             Long totalFileSize
     ) {
         stgApi.insertRow(
-                context,
                 groupId,
                 url,
                 fileName,
@@ -94,8 +94,8 @@ public class DownloadRepo {
         return downloadMap.get(groupId);
     }
 
-    public void updateMinRange(Context context, String groupId, Long range, Long minRange) {
-        stgApi.updateMinRange(context, groupId, range, minRange);
+    public void updateMinRange(String groupId, Long range, Long minRange) {
+        stgApi.updateMinRange(groupId, range, minRange);
     }
 
     public FileDownload getFileDownload(String groupId) {
