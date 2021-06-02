@@ -2,95 +2,71 @@ package com.nevilleantony.prototype.storage;
 
 
 import android.content.Context;
-import android.util.Log;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 
 public class StorageApi {
-    final private String SUCCESS_MESSAGE = "Success";
-    private final List<DownloadsModel> downloadsModels = new ArrayList<>();
-    private DownloadsDatabase db = null;
-    private String downloadModelFileName;
-    private String downloadModelFileUrl;
-    private Long downloadModelSize;
-    private DownloadsDao.RangeTuple rangeTuple;
+	private static StorageApi storageApi;
+	private final DownloadsDatabase db;
 
-    public String insertRow(Context context, String id, String file_url, String file_name, Long range, Long min_range, Long max_range, Long size) {
-        db = DownloadsDatabase.getInstance(context);
-        DownloadsModel file = new DownloadsModel(id, file_url, file_name, range, min_range, max_range, size);
-        db.getDoa().insertDownloads(file).subscribe();
-        return SUCCESS_MESSAGE;
-    }
+	private StorageApi(Context context) {
+		db = DownloadsDatabase.getInstance(context);
+	}
 
-    public String retrieveFileName(Context context, String groupId, Long fileRange) {
-        db = DownloadsDatabase.getInstance(context);
-        db.getDoa().retrieveFileName(groupId, fileRange).subscribe(new Consumer<List<String>>() {
-            @Override
-            public void accept(List<String> strings) throws Throwable {
-                downloadModelFileName = strings.get(0);
-            }
-        });
-        return downloadModelFileName;
-    }
+	public static StorageApi getInstance(Context context) {
+		if (storageApi == null) {
+			storageApi = new StorageApi(context);
+		}
 
-    public String retrieveFileUrl(Context context, String groupId, Long fileRange) {
-        db = DownloadsDatabase.getInstance(context);
-        db.getDoa().retrieveFileUrl(groupId, fileRange).subscribe(new Consumer<List<String>>() {
-            @Override
-            public void accept(List<String> strings) throws Throwable {
-                downloadModelFileUrl = strings.get(0);
-            }
-        });
-        return downloadModelFileUrl;
-    }
+		return storageApi;
+	}
 
-    public DownloadsDao.RangeTuple retrieveMinMaxRange(Context context, String groupId, Long fileRange) {
-        db = DownloadsDatabase.getInstance(context);
-        db.getDoa().retrieveMinMaxRange(groupId, fileRange).subscribe(new Consumer<List<DownloadsDao.RangeTuple>>() {
-            @Override
-            public void accept(List<DownloadsDao.RangeTuple> rangeTuples) throws Throwable {
-                Log.d("ERROR", rangeTuples.toString());
-                rangeTuple = rangeTuples.get(0);
-            }
-        });
-        return rangeTuple;
-    }
+	public void insertRow(String id, String file_url, String file_name, Long range, Long min_range,
+	                      Long max_range, Long size) {
+		DownloadsModel file = new DownloadsModel(id, file_url, file_name, range, min_range, max_range, size);
+		db.getDoa().insertDownloads(file).subscribeOn(Schedulers.io()).subscribe();
+	}
 
-    public Long retrieveSize(Context context, String groupId, Long fileRange) {
-        db = DownloadsDatabase.getInstance(context);
-        db.getDoa().retrieveSize(groupId, fileRange).subscribe(new Consumer<List<Long>>() {
-            @Override
-            public void accept(List<Long> longs) throws Throwable {
-                downloadModelSize = longs.get(0);
-            }
-        });
-        return downloadModelSize;
-    }
+	public void retrieveFileName(String groupId, Long fileRange,
+	                             DatabaseReturnable<String> databaseReturnable) {
+		db.getDoa().retrieveFileName(groupId, fileRange).subscribeOn(Schedulers.io())
+				.subscribe(strings -> databaseReturnable.returnable(strings.get(0)));
+	}
 
-    public String updateMinRange(Context context, String groupId, Long fileRange, Long minRange) {
-        db = DownloadsDatabase.getInstance(context);
-        db.getDoa().updateMinRange(groupId, fileRange, minRange).subscribe();
-        return SUCCESS_MESSAGE;
-    }
+	public void retrieveFileUrl(String groupId, Long fileRange,
+	                            DatabaseReturnable<String> databaseReturnable) {
+		db.getDoa().retrieveFileUrl(groupId, fileRange).subscribeOn(Schedulers.io())
+				.subscribe(strings -> databaseReturnable.returnable(strings.get(0)));
+	}
 
-    public String updateMaxRange(Context context, String groupId, Long fileRange, Long minRange) {
-        db = DownloadsDatabase.getInstance(context);
-        db.getDoa().updateMaxRange(groupId, fileRange, minRange).subscribe();
-        return SUCCESS_MESSAGE;
-    }
+	public void retrieveMinMaxRange(String groupId, Long fileRange,
+	                                DatabaseReturnable<DownloadsDao.RangeTuple> databaseReturnable) {
+		db.getDoa().retrieveMinMaxRange(groupId, fileRange).subscribeOn(Schedulers.io())
+				.subscribe(rangeTuples -> databaseReturnable.returnable(rangeTuples.get(0)));
+	}
 
-    public List<DownloadsModel> getAll(Context context) {
-        db = DownloadsDatabase.getInstance(context);
-        db.getDoa().getAll().subscribe(new Consumer<List<DownloadsModel>>() {
-            @Override
-            public void accept(List<DownloadsModel> downloadsModels) throws Throwable {
-                downloadsModels = downloadsModels;
-            }
-        });
-        return downloadsModels;
-    }
+	public void retrieveSize(String groupId, Long fileRange,
+	                         DatabaseReturnable<Long> databaseReturnable) {
+		db.getDoa().retrieveSize(groupId, fileRange).subscribeOn(Schedulers.io())
+				.subscribe(longs -> databaseReturnable.returnable(longs.get(0)));
+	}
+
+	public void updateMinRange(String groupId, Long fileRange, Long minRange) {
+		db.getDoa().updateMinRange(groupId, fileRange, minRange).subscribeOn(Schedulers.io()).subscribe();
+	}
+
+	public void updateMaxRange(String groupId, Long fileRange, Long minRange) {
+		db.getDoa().updateMaxRange(groupId, fileRange, minRange).subscribeOn(Schedulers.io()).subscribe();
+	}
+
+	public void getAll(DatabaseReturnable<List<DownloadsModel>> databaseReturnable) {
+		db.getDoa().getAll().subscribeOn(Schedulers.io()).subscribe(databaseReturnable::returnable);
+	}
+
+	public interface DatabaseReturnable<T> {
+		void returnable(T result);
+	}
 }

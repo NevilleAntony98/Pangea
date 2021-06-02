@@ -96,7 +96,7 @@ public class FileDownload {
                         if (state == DownloadState.PAUSED) {
                             downloadRepo = DownloadRepo.getInstance(context);
                             if (downloadRepo != null) {
-                                downloadRepo.updateMinRange(context, groupId, range, minRange + downloadedSize);
+                                downloadRepo.updateMinRange(groupId, range, minRange + downloadedSize);
                             }
                         } else {
                             state = DownloadState.COMPLETED;

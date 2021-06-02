@@ -13,7 +13,7 @@ public abstract class DownloadsDatabase extends RoomDatabase {
 
     public static DownloadsDatabase getInstance(Context context) {
         if (downloadDb == null) {
-            downloadDb = Room.databaseBuilder(context, DownloadsDatabase.class, "Sample").allowMainThreadQueries().build();
+            downloadDb = Room.databaseBuilder(context, DownloadsDatabase.class, "Sample").build();
         }
         return downloadDb;
     }
