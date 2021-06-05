@@ -30,6 +30,7 @@ public class DownloadRepo {
                 FileDownload fileDownload = new FileDownload(
                         model.getId(),
                         model.getFile_url(),
+                        model.getFile_name(),
                         model.getRange(),
                         model.getMin_range(),
                         model.getMax_range(),
@@ -86,6 +87,7 @@ public class DownloadRepo {
         downloadMap.put(groupId, new FileDownload(
                 groupId,
                 url,
+                fileName,
                 range,
                 minRange,
                 maxRange,

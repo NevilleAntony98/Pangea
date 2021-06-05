@@ -18,12 +18,13 @@ import java.util.List;
 public class FileDownload {
     private static final String TAG = "FILE DOWNLOAD";
     private static final int BYTE_ARRAY_SIZE = 16 * 1024;
-    private final String groupId;
-    private final String fileUrl;
-    private final Long range;
+    public final String groupId;
+    public final String fileUrl;
+    public final Long partNo;
+    public final Long totalFileSize;
+    public final String fileName;
     private final Long minRange;
     private final Long maxRange;
-    private final Long totalFileSize;
     private final Handler handler;
     private final List<OnStateChangedCallback> onStateChangedCallbacks;
     HttpURLConnection urlConnection = null;
@@ -38,17 +39,19 @@ public class FileDownload {
     FileDownload(
             String groupId,
             String fileUrl,
-            Long range,
+            String fileName,
+            Long partNo,
             Long minRange,
             Long maxRange,
             Long totalFileSize
     ) {
         this.groupId = groupId;
         this.fileUrl = fileUrl;
-        this.range = range;
+        this.partNo = partNo;
         this.minRange = minRange;
         this.maxRange = maxRange;
         this.totalFileSize = totalFileSize;
+        this.fileName = fileName;
 
         HandlerThread downloadThread = new HandlerThread(TAG + " " + groupId);
         downloadThread.start();
@@ -77,7 +80,8 @@ public class FileDownload {
                         Log.d(TAG, "Response code: " + urlConnection.getResponseCode());
 
                         input = urlConnection.getInputStream();
-                        fileOutput = new FileOutputStream(DownloadRepo.createFile(groupId, String.valueOf(range)), true);
+                        fileOutput = new FileOutputStream(DownloadRepo.createFile(groupId, String.valueOf(partNo)),
+                                true);
 
                         if (minRange + downloadedSize <= maxRange) {
                             byte[] data = new byte[BYTE_ARRAY_SIZE];
@@ -96,7 +100,7 @@ public class FileDownload {
                         if (state == DownloadState.PAUSED) {
                             downloadRepo = DownloadRepo.getInstance(context);
                             if (downloadRepo != null) {
-                                downloadRepo.updateMinRange(groupId, range, minRange + downloadedSize);
+                                downloadRepo.updateMinRange(groupId, partNo, minRange + downloadedSize);
                             }
                         } else {
                             state = DownloadState.COMPLETED;
@@ -173,7 +177,7 @@ public class FileDownload {
         }
     }
 
-    interface OnStateChangedCallback {
+    public interface OnStateChangedCallback {
         void onStateChanged(DownloadState state);
 
         void onDownloadComplete();
