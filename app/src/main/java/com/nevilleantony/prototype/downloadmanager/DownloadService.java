@@ -12,18 +12,21 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class DownloadService extends Service {
     private static final int NOTIFICATION_ID = 1;
+    private static final int NOTIFICATION_TIMEOUT = 500;
     private static final String TAG = "Download Service";
     private PendingIntent actionIntent = null;
     private NotificationCompat.Builder notificationBuilder = null;
     private NotificationManager notificationManager = null;
     private Notification notification = new Notification();
     private String groupId;
-
+    private Disposable disposable;
 
     @Override
     public void onCreate() {
@@ -37,21 +40,22 @@ public class DownloadService extends Service {
         createNotification();
         DownloadRepo downloadRepo = DownloadRepo.getInstance(this);
         FileDownload fileDownload = downloadRepo.getFileDownload(groupId);
+        PublishSubject<Integer> publishSubject = PublishSubject.create();
+        disposable = publishSubject.throttleLast(NOTIFICATION_TIMEOUT, TimeUnit.MILLISECONDS)
+                .subscribe(progress -> {
+                    notificationBuilder.setProgress(100, progress, false);
+                    notification = notificationBuilder.build();
+                    notification.actions[0].title =
+                            FileDownload.DownloadState.getNotificationAction(fileDownload.getState());
+                    notificationManager.notify(NOTIFICATION_ID, notification);
+                });
+
         fileDownload.addOnStateChangedCallback(new FileDownload.OnStateChangedCallback() {
             @Override
-            public void onDownloadStarted() {
-                Log.d(TAG, "Download Resumed/Started");
-                if (notification.actions != null) {
-                    notification.actions[0].title = "Pause";
-                    notificationManager.notify(NOTIFICATION_ID, notification);
-                }
-            }
-
-            @Override
-            public void onDownloadPaused(int progress) {
-                Log.d(TAG, "Download Paused");
-                notification.actions[0].title = "Resume";
+            public void onStateChanged(FileDownload.DownloadState state) {
+                notification.actions[0].title = FileDownload.DownloadState.getNotificationAction(state);
                 notificationManager.notify(NOTIFICATION_ID, notification);
+                Log.d(TAG, "Download" + notification.actions[0].title);
             }
 
             @Override
@@ -62,23 +66,18 @@ public class DownloadService extends Service {
 
             @Override
             public void onProgressChanged(int progress) {
-                notificationBuilder.setProgress(100, progress, false);
-                notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+                publishSubject.onNext(progress);
             }
         });
 
-        try {
-            fileDownload.startDownload(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        fileDownload.startDownload(this);
 
         return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
-
+        disposable.dispose();
     }
 
     @Nullable

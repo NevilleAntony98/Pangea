@@ -17,11 +17,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         if (fileDownload.getState() == FileDownload.DownloadState.RUNNING) {
             fileDownload.pauseDownload();
         } else if (fileDownload.getState() == FileDownload.DownloadState.PAUSED) {
-            try {
-                fileDownload.startDownload(context);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            fileDownload.startDownload(context);
         }
     }
 }
