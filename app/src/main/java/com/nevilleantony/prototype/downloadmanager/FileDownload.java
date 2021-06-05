@@ -59,11 +59,11 @@ public class FileDownload {
     }
 
 
-    public void startDownload(Context context) throws IOException {
+    public void startDownload(Context context) {
         state = DownloadState.RUNNING;
 
         for (OnStateChangedCallback callback : onStateChangedCallbacks) {
-            callback.onDownloadStarted();
+            callback.onStateChanged(state);
         }
         handler.post(
                 () -> {
@@ -134,7 +134,7 @@ public class FileDownload {
         state = DownloadState.PAUSED;
 
         for (OnStateChangedCallback callback : onStateChangedCallbacks) {
-            callback.onDownloadPaused(progress);
+            callback.onStateChanged(state);
         }
     }
 
@@ -150,13 +150,31 @@ public class FileDownload {
         NOT_STARTED,
         RUNNING,
         PAUSED,
-        COMPLETED
+        COMPLETED;
+
+        public static String getNotificationAction(DownloadState state) {
+            String action;
+
+            switch (state) {
+                case NOT_STARTED:
+                    action = "Start";
+                    break;
+                case RUNNING:
+                    action = "Pause";
+                    break;
+                case PAUSED:
+                    action = "Resume";
+                    break;
+                default:
+                    action = "";
+            }
+
+            return action;
+        }
     }
 
     interface OnStateChangedCallback {
-        void onDownloadStarted();
-
-        void onDownloadPaused(int progress);
+        void onStateChanged(DownloadState state);
 
         void onDownloadComplete();
 
