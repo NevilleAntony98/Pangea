@@ -12,49 +12,60 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class DownloadService extends Service {
-    private static final int NOTIFICATION_ID = 1;
     private static final int NOTIFICATION_TIMEOUT = 500;
     private static final String TAG = "Download Service";
-    private PendingIntent actionIntent = null;
-    private NotificationCompat.Builder notificationBuilder = null;
-    private NotificationManager notificationManager = null;
-    private Notification notification = new Notification();
-    private String groupId;
-    private Disposable disposable;
+    private static int NOTIFICATION_ID = -1;
+    private static Map<String, NotificationCompat.Builder> notificationBuilderMap = new HashMap<String, NotificationCompat.Builder>();
+    private static NotificationManager notificationManager = null;
+    private static NotificationChannel channel = null;
+    private static Map<String, Integer> notificationIdMap = new HashMap<String, Integer>();
+    private CompositeDisposable disposables;
 
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate");
+        NotificationChannel channel = new NotificationChannel(
+                TAG,
+                "Notification Channel",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+        notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        groupId = intent.getStringExtra("groupId");
+        String groupId = intent.getStringExtra("groupId");
+        notificationIdMap.put(groupId, ++NOTIFICATION_ID);
         Log.d(TAG, "File Download ID: " + groupId);
-        createNotification();
         DownloadRepo downloadRepo = DownloadRepo.getInstance(this);
         FileDownload fileDownload = downloadRepo.getFileDownload(groupId);
+        createNotification(fileDownload.fileName, fileDownload.groupId);
         PublishSubject<Integer> publishSubject = PublishSubject.create();
-        disposable = publishSubject.throttleLast(NOTIFICATION_TIMEOUT, TimeUnit.MILLISECONDS)
+        disposables.add(publishSubject.throttleLast(NOTIFICATION_TIMEOUT, TimeUnit.MILLISECONDS)
                 .subscribe(progress -> {
-                    notificationBuilder.setProgress(100, progress, false);
-                    notification = notificationBuilder.build();
+                    notificationBuilderMap.get(fileDownload.groupId).setProgress(100, progress, false);
+                    Notification notification = notificationBuilderMap.get(fileDownload.groupId).build();
                     notification.actions[0].title =
                             FileDownload.DownloadState.getNotificationAction(fileDownload.getState());
-                    notificationManager.notify(NOTIFICATION_ID, notification);
-                });
+                    notificationManager.notify(notificationIdMap.get(fileDownload.groupId), notification);
+                }));
 
         fileDownload.addOnStateChangedCallback(new FileDownload.OnStateChangedCallback() {
             @Override
             public void onStateChanged(FileDownload.DownloadState state) {
+                Notification notification = notificationBuilderMap.get(fileDownload.groupId).build();
                 notification.actions[0].title = FileDownload.DownloadState.getNotificationAction(state);
-                notificationManager.notify(NOTIFICATION_ID, notification);
+                notificationManager.notify(notificationIdMap.get(fileDownload.groupId), notification);
                 Log.d(TAG, "Download" + notification.actions[0].title);
             }
 
@@ -77,7 +88,7 @@ public class DownloadService extends Service {
 
     @Override
     public void onDestroy() {
-        disposable.dispose();
+        disposables.dispose();
     }
 
     @Nullable
@@ -87,28 +98,20 @@ public class DownloadService extends Service {
         return null;
     }
 
-    private void createNotification() {
-        NotificationChannel channel = new NotificationChannel(
-                TAG,
-                "Notification Channel",
-                NotificationManager.IMPORTANCE_HIGH
-        );
-        notificationManager = getSystemService(NotificationManager.class);
-        notificationManager.createNotificationChannel(channel);
-
+    private void createNotification(String fileName, String groupId) {
         Intent intentAction = new Intent(this, NotificationReceiver.class);
         intentAction.putExtra("groupId", groupId);
-        actionIntent = PendingIntent.getBroadcast(this, 1, intentAction, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent actionIntent = PendingIntent.getBroadcast(this, notificationIdMap.get(groupId), intentAction, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        notificationBuilder = new NotificationCompat.Builder(getApplicationContext(), TAG)
+        notificationBuilderMap.put(groupId, new NotificationCompat.Builder(getApplicationContext(), TAG)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle("Download")
+                .setContentTitle("Downloading " + fileName)
                 .setProgress(0, 0, false)
                 .addAction(android.R.drawable.ic_media_pause, "Pause", actionIntent)
-                .setOnlyAlertOnce(true);
-        notification = notificationBuilder.build();
-        startForeground(NOTIFICATION_ID, notification);
+                .setOnlyAlertOnce(true));
+
+        startForeground(notificationIdMap.get(groupId), notificationBuilderMap.get(groupId).build());
     }
 
 }
