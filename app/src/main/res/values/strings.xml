@@ -34,4 +34,21 @@
     <string name="kick_member">Kick member</string>
     <string name="join_a_room">Join a Room</string>
     <string name="non_empty_room_name_required">Room name can not be empty</string>
+
+    <string name="downloads_name_text">Name</string>
+    <string name="downloads_status_text">Status</string>
+    <string name="downloads_size_text">Size</string>
+    <string name="downloads_percentage_text">Percentage</string>
+
+    <string name="download_status">Downloading</string>
+    <string name="downloads_status_completed">Completed</string>
+
+    <string name="toggle_button_text">ToggleButton</string>
+    <string name="pause_text">PAUSE</string>
+    <string name="resume_text">RESUME</string>
+
+    <string name="stop_button_text">STOP</string>
+
+    <string name="downloads_percent_initial">00</string>
+
 </resources>
