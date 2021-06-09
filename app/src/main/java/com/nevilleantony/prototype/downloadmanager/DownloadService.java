@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class DownloadService extends Service {
@@ -28,7 +27,7 @@ public class DownloadService extends Service {
     private static NotificationManager notificationManager = null;
     private static NotificationChannel channel = null;
     private static Map<String, Integer> notificationIdMap = new HashMap<String, Integer>();
-    private CompositeDisposable disposables;
+    private CompositeDisposable disposables = new CompositeDisposable();
 
     @Override
     public void onCreate() {

@@ -13,6 +13,7 @@ import com.nevilleantony.prototype.storage.StorageApi;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,6 +163,11 @@ public class DownloadRepo {
         void onCompletedLoaded();
 
         void onDownloadsLoaded();
+    }
+
+
+    public Collection<FileDownload> getDownloads() {
+        return downloadMap.values();
     }
 
 }
