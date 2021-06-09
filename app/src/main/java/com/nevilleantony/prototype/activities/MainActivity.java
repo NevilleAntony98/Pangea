@@ -21,8 +21,7 @@ import com.jakewharton.rxbinding4.material.RxBottomNavigationView;
 import com.jakewharton.rxbinding4.viewpager2.RxViewPager2;
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.adapters.ViewPagerAdapter;
-import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
-import com.nevilleantony.prototype.downloadmanager.DownloadService;
+import com.nevilleantony.prototype.fragments.DownloadsListFragment;
 import com.nevilleantony.prototype.fragments.SampleFragment;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -46,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         viewPager = findViewById(R.id.view_pager);
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
 
-        viewPagerAdapter.addFragment(SampleFragment.newInstance("Downloads Page"));
+        viewPagerAdapter.addFragment(new DownloadsListFragment());
         viewPagerAdapter.addFragment(SampleFragment.newInstance("Completed Page"));
 
         final BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
@@ -86,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(viewPagerAdapter);
 
         permission_request();
-
     }
 
 
