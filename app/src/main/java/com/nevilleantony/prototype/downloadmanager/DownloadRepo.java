@@ -26,7 +26,7 @@ public class DownloadRepo {
     private static DownloadRepo downloadRepo = null;
     private final Map<String, FileDownload> downloadMap = new HashMap<>();
     private final StorageApi stgApi;
-    private final Map<String, List<Long>> downloadPartsMap = new HashMap<>();
+    private final Map<String, List<Long>> availablePartsMap = new HashMap<>();
     private final List<OnDatabaseLoaded> onDatabaseLoadedCallbacks;
     private final Map<String, File> completedFileMap = new HashMap<>();
 
@@ -60,10 +60,10 @@ public class DownloadRepo {
 
         stgApi.getAvailDownload(availDownloadModel -> {
             for (AvailableDownloadsModel model : availDownloadModel) {
-                if (!downloadPartsMap.containsKey(model.getId())) {
-                    downloadPartsMap.put(model.getId(), new ArrayList<>());
+                if (!availablePartsMap.containsKey(model.getId())) {
+                    availablePartsMap.put(model.getId(), new ArrayList<>());
                 }
-                Objects.requireNonNull(downloadPartsMap.get(model.getId())).add(model.getParts());
+                Objects.requireNonNull(availablePartsMap.get(model.getId())).add(model.getParts());
             }
 
             for (OnDatabaseLoaded callbacks : onDatabaseLoadedCallbacks) {
@@ -149,11 +149,24 @@ public class DownloadRepo {
         return downloadMap.get(groupId);
     }
 
-    public List<Long> getPartList(String groupId) {
-        return downloadPartsMap.get(groupId);
+    public List<Long> getAvailableParts(String groupId) {
+        return availablePartsMap.get(groupId);
     }
 
-    public void addonPartListCallback(OnDatabaseLoaded callback) {
+    public void addAvailablePart(String id, Long partNumber) {
+        stgApi.insertAvailDownload(id, partNumber);
+        if (!availablePartsMap.containsKey(id)) {
+            availablePartsMap.put(id, new ArrayList<>());
+        }
+
+        Objects.requireNonNull(availablePartsMap.get(id)).add(partNumber);
+    }
+
+    public Map<String, List<Long>> getAvailablePartsMap() {
+        return new HashMap<>(availablePartsMap);
+    }
+
+    public void addOnDatabaseLoadedCallback(OnDatabaseLoaded callback) {
         onDatabaseLoadedCallbacks.add(callback);
     }
 
