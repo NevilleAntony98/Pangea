@@ -53,6 +53,9 @@ public class FileDownload {
         this.totalFileSize = totalFileSize;
         this.fileName = fileName;
 
+        if(minRange == maxRange){
+            this.state = DownloadState.COMPLETED;
+        }
         HandlerThread downloadThread = new HandlerThread(TAG + " " + groupId);
         downloadThread.start();
         handler = new Handler(downloadThread.getLooper());
@@ -63,6 +66,7 @@ public class FileDownload {
 
 
     public void startDownload(Context context) {
+        if(state == DownloadState.COMPLETED){return;}
         state = DownloadState.RUNNING;
 
         for (OnStateChangedCallback callback : onStateChangedCallbacks) {
@@ -104,6 +108,9 @@ public class FileDownload {
                             }
                         } else {
                             state = DownloadState.COMPLETED;
+                            downloadRepo = DownloadRepo.getInstance(context);
+                            downloadRepo.updateMinRange(groupId, partNo, maxRange);
+                            downloadRepo.addAvailablePart(groupId, partNo);
                             for (OnStateChangedCallback callback : onStateChangedCallbacks) {
                                 callback.onDownloadComplete();
                             }
