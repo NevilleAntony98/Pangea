@@ -2,6 +2,8 @@ package com.nevilleantony.prototype.utils;
 
 import android.util.Log;
 
+import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -10,20 +12,47 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FileMerger {
 	private static final String TAG = "FileMerger";
 
-	public static void mergeFiles(List<String> partPaths, String outputPath, ProgressCallback callable) {
-		if (partPaths.size() < 2) {
+	public static boolean mergeDownload(String groupId, String fileName, Long totalPartsNo,
+	                                    ProgressCallback progressCallback) {
+		File groupDir = new File(DownloadRepo.PATH + groupId);
+		if (!groupDir.exists()) {
+			Log.e(TAG, "Group folder doesn't exist for the given group ID");
+			return false;
+		}
+
+		List<File> fileList = new ArrayList<>();
+		String parts = groupDir.getAbsolutePath() + File.separator + "%d";
+		for (int i = 0; i < totalPartsNo; i++) {
+			String path = String.format(parts, i);
+			File part = new File(path);
+			if (!part.exists()) {
+				Log.e(TAG, "One or more parts were not found in group directory");
+				return false;
+			}
+
+			fileList.add(part);
+		}
+
+		File output = new File(groupDir + File.separator + fileName);
+		mergeFiles(fileList, output, progressCallback);
+
+		return true;
+	}
+
+	private static void mergeFiles(List<File> parts, File output, ProgressCallback callable) {
+		if (parts.size() < 2) {
 			Log.d(TAG, "Less than 2 file parts. No need to merge");
 			return;
 		}
 
 		final int BUFFER_SIZE = 16 * 1024;
 
-		File output = new File(outputPath);
 		try {
 			if (!output.createNewFile()) {
 				Log.d(TAG, "A file already exists for the given output path. Aborting.");
@@ -36,8 +65,8 @@ public class FileMerger {
 		try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(output))) {
 			long totalBytesRead = 0;
 
-			for (int i = 0; i < partPaths.size(); i++) {
-				File part = new File(partPaths.get(i));
+			for (int i = 0; i < parts.size(); i++) {
+				File part = parts.get(i);
 
 				try (InputStream inputStream = new BufferedInputStream(new FileInputStream(part))) {
 					int bytesRead;
