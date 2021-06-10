@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -23,19 +24,15 @@ import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.adapters.ViewPagerAdapter;
 import com.nevilleantony.prototype.fragments.DownloadsListFragment;
 import com.nevilleantony.prototype.fragments.SampleFragment;
+import com.nevilleantony.prototype.utils.Utils;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity {
 
-    ViewPager2 viewPager;
-    ViewPagerAdapter viewPagerAdapter;
-    CompositeDisposable disposables;
-
-    public MainActivity() {
-        disposables = new CompositeDisposable();
-    }
+    private final CompositeDisposable disposables = new CompositeDisposable();;
+    private ViewPager2 viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         viewPager = findViewById(R.id.view_pager);
-        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
 
         viewPagerAdapter.addFragment(new DownloadsListFragment());
         viewPagerAdapter.addFragment(SampleFragment.newInstance("Completed Page"));
@@ -102,11 +99,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast toast = Toast.makeText(getApplicationContext(), "Permission has been granted", Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(getApplicationContext(), "Permission has been granted",
+                        Toast.LENGTH_SHORT);
                 toast.show();
             } else {
                 Toast toast = Toast.makeText(getApplicationContext(), "Will not function", Toast.LENGTH_SHORT);
@@ -138,8 +137,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onFABClicked(View view) {
-        Intent intent = new Intent(this, NewDownloadActivity.class);
-        startActivity(intent);
+        if (view.getId() == R.id.new_download_fab) {
+            Intent intent = new Intent(this, NewDownloadActivity.class);
+            startActivity(intent);
+        } else {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+                return;
+            }
+
+            if (!Utils.isLocationEnabled(this)) {
+                Utils.tryRequestLocation(this);
+                return;
+            }
+
+            Intent intent = new Intent(this, ShareActivity.class);
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -147,4 +161,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         disposables.dispose();
     }
+
+
 }
