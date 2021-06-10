@@ -32,6 +32,17 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activities.ShareActivity"
+            android:label="@string/share"
+            android:parentActivityName=".activities.MainActivity"
+            android:theme="@style/Theme.Prototype">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.MainActivity" />
+        </activity>
+
+        <activity
             android:name=".activities.NewDownloadActivity"
             android:label="@string/title_activity_new_download"
             android:parentActivityName=".activities.MainActivity"

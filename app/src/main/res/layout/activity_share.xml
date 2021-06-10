@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    tools:context=".activities.ShareActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="15dp"
+        android:text="@string/share_files"
+        android:textSize="32sp" />
+
+    <TextView
+        android:id="@+id/share_qr_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="20dp"
+        android:text="@string/please_share_qr"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/share_toggle_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="30dp"
+        android:paddingHorizontal="35dp">
+
+        <Button
+            android:id="@+id/share_new_room_button"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/new_room" />
+
+        <Button
+            android:id="@+id/share_join_room_button"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/join_room" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <ImageView
+        android:id="@+id/share_qr_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:layout_weight="1"
+        android:contentDescription="@string/wifi_ssid_and_passphrase"
+        android:src="@drawable/scan_qr" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/start_share_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
+            android:enabled="false"
+            android:padding="15dp"
+            android:text="@string/waiting_for_device"
+            android:visibility="invisible" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/share_progress_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="10dp"
+            android:max="100"
+            android:min="0"
+            android:paddingHorizontal="30dp"
+            app:trackCornerRadius="6dp"
+            android:visibility="invisible"
+            app:trackThickness="4sp" />
+    </LinearLayout>
+
+
+</LinearLayout>

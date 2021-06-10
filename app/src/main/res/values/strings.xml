@@ -51,4 +51,18 @@
 
     <string name="downloads_percent_initial">00</string>
 
+    <string name="share_files">Share Files</string>
+    <string name="wifi_ssid_and_passphrase">WiFi SSID and Passphrase</string>
+    <string name="waiting_for_device">Waiting For Device</string>
+    <string name="progress">Progress</string>
+    <string name="share">Share</string>
+    <string name="new_room">New Room</string>
+    <string name="join_room">Join Room</string>
+    <string name="please_share_qr">Please share the QR Code with the other device</string>
+    <string name="start_sync">Start Sync</string>
+    <string name="syncing">Syncing</string>
+    <string name="syncing_dot_dot">Syncing...</string>
+    <string name="sharing_sync_info">Sharing sync info</string>
+    <string name="all_complete">All complete</string>
+    <string name="done">Done</string>
 </resources>
