@@ -21,6 +21,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.adapters.PeerListAdapter;
+import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
 import com.nevilleantony.prototype.room.MessageType;
 import com.nevilleantony.prototype.room.Peer;
 import com.nevilleantony.prototype.room.RoomBroadcastReceiver;
@@ -62,6 +63,7 @@ public class RoomActivity extends AppCompatActivity {
 	private RoomClient roomClient;
 	private String ownerName;
 	private String thisDeviceName;
+	private String roomName;
 	private Handler handler;
 
 	public RoomActivity() {
@@ -85,7 +87,7 @@ public class RoomActivity extends AppCompatActivity {
 		});
 
 		isOwner = getIntent().getBooleanExtra("is_owner", false);
-		String roomName = getIntent().getStringExtra("room_name");
+		roomName = getIntent().getStringExtra("room_name");
 		if (isOwner) {
 			try {
 				url = new URL(getIntent().getStringExtra("url"));
@@ -162,10 +164,10 @@ public class RoomActivity extends AppCompatActivity {
 			long nPeers = adapter.getItemCount();
 			List<Range> ranges = SyncManager.getRanges(Long.parseLong(downloadSize), nPeers);
 			// Removes a range from list to be assigned to this device
-			Range myRange = ranges.remove(ranges.size() - 1);
+			Range myRange = ranges.remove(0);
 			List<String> uniqueMessages = new ArrayList<>();
 
-			long partNumber = 0;
+			long partNumber = 1;
 			for (Range range : ranges) {
 				List<String> payload = new ArrayList<>();
 				payload.add(url);
@@ -177,6 +179,8 @@ public class RoomActivity extends AppCompatActivity {
 				uniqueMessages.add(MessageType.encodeList(payload));
 			}
 
+			DownloadRepo.getInstance(this).createFileDownload(urlDigest, url, roomName, (long) 0, myRange.min, myRange.max,
+					myRange.max - myRange.min);
 			roomServer.distributeMessage(MessageType.ROOM_SYNC, uniqueMessages);
 		});
 
@@ -248,6 +252,11 @@ public class RoomActivity extends AppCompatActivity {
 					String totalSize = urlDetails[2];
 					String range = urlDetails[3];
 					String partNumber = urlDetails[4];
+
+					long minRange = Long.parseLong(range.split("-")[0]);
+					long maxRange = Long.parseLong(range.split("-")[1]);
+					DownloadRepo.getInstance(getContext()).createFileDownload(urlHash, url, roomName,
+							Long.parseLong(partNumber), minRange, maxRange, maxRange - minRange);
 
 					urlTextEditText.setText(url);
 					urlTextInputLayout.setHelperText(Utils.getHumanReadableSize(Long.parseLong(totalSize)));
