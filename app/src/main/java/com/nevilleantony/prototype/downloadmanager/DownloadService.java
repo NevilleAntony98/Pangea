@@ -44,12 +44,36 @@ public class DownloadService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String groupId = intent.getStringExtra("groupId");
-        notificationIdMap.put(groupId, ++NOTIFICATION_ID);
         Log.d(TAG, "File Download ID: " + groupId);
         DownloadRepo downloadRepo = DownloadRepo.getInstance(this);
         FileDownload fileDownload = downloadRepo.getFileDownload(groupId);
-        createNotification(fileDownload.fileName, fileDownload.groupId);
         PublishSubject<Integer> publishSubject = PublishSubject.create();
+
+
+        if(!notificationBuilderMap.containsKey(groupId)){
+            notificationIdMap.put(groupId, ++NOTIFICATION_ID);
+            createNotification(fileDownload.fileName, fileDownload.groupId);
+            fileDownload.addOnStateChangedCallback(new FileDownload.OnStateChangedCallback() {
+                @Override
+                public void onStateChanged(FileDownload.DownloadState state) {
+                    Notification notification = notificationBuilderMap.get(fileDownload.groupId).build();
+                    notification.actions[0].title = FileDownload.DownloadState.getNotificationAction(state);
+                    notificationManager.notify(notificationIdMap.get(fileDownload.groupId), notification);
+                    Log.d(TAG, "Download" + notification.actions[0].title);
+                }
+
+                @Override
+                public void onDownloadComplete() {
+                    stopSelf();
+                    Log.d(TAG, "Download Completed");
+                }
+
+                @Override
+                public void onProgressChanged(int progress) {
+                    publishSubject.onNext(progress);
+                }
+            });
+        }
         disposables.add(publishSubject.throttleLast(NOTIFICATION_TIMEOUT, TimeUnit.MILLISECONDS)
                 .subscribe(progress -> {
                     notificationBuilderMap.get(fileDownload.groupId).setProgress(100, progress, false);
@@ -58,28 +82,6 @@ public class DownloadService extends Service {
                             FileDownload.DownloadState.getNotificationAction(fileDownload.getState());
                     notificationManager.notify(notificationIdMap.get(fileDownload.groupId), notification);
                 }));
-
-        fileDownload.addOnStateChangedCallback(new FileDownload.OnStateChangedCallback() {
-            @Override
-            public void onStateChanged(FileDownload.DownloadState state) {
-                Notification notification = notificationBuilderMap.get(fileDownload.groupId).build();
-                notification.actions[0].title = FileDownload.DownloadState.getNotificationAction(state);
-                notificationManager.notify(notificationIdMap.get(fileDownload.groupId), notification);
-                Log.d(TAG, "Download" + notification.actions[0].title);
-            }
-
-            @Override
-            public void onDownloadComplete() {
-                stopSelf();
-                Log.d(TAG, "Download Completed");
-            }
-
-            @Override
-            public void onProgressChanged(int progress) {
-                publishSubject.onNext(progress);
-            }
-        });
-
         fileDownload.startDownload(this);
 
         return START_NOT_STICKY;
