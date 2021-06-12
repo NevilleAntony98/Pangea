@@ -26,6 +26,7 @@ import com.nevilleantony.prototype.adapters.ViewPagerAdapter;
 import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
 import com.nevilleantony.prototype.fragments.DownloadsListFragment;
 import com.nevilleantony.prototype.fragments.SampleFragment;
+import com.nevilleantony.prototype.room.RoomRepo;
 import com.nevilleantony.prototype.utils.Utils;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -61,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
         downloadRepo.unLoadDb();
+
+        RoomRepo.unloadFromDb(this);
+
         setContentView(R.layout.activity_main);
 
         viewPager = findViewById(R.id.view_pager);
