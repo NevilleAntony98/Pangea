@@ -75,6 +75,10 @@
         <service
             android:name=".downloadmanager.DownloadService"
             android:enabled="true" />
+
+        <service
+            android:name=".share.MergeService"
+            android:enabled="true" />
     </application>
 
 </manifest>
