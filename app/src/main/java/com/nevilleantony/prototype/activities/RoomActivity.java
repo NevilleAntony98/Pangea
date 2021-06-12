@@ -27,6 +27,7 @@ import com.nevilleantony.prototype.room.Peer;
 import com.nevilleantony.prototype.room.RoomBroadcastReceiver;
 import com.nevilleantony.prototype.room.RoomClient;
 import com.nevilleantony.prototype.room.RoomManager;
+import com.nevilleantony.prototype.room.RoomRepo;
 import com.nevilleantony.prototype.room.RoomServer;
 import com.nevilleantony.prototype.room.SyncManager;
 import com.nevilleantony.prototype.utils.Range;
@@ -182,6 +183,7 @@ public class RoomActivity extends AppCompatActivity {
 
 			DownloadRepo.getInstance(this).createFileDownload(urlDigest, url, roomName, (long) 0, myRange.min, myRange.max,
 					myRange.max - myRange.min);
+			RoomRepo.addRoom(urlDigest, url, roomName, Long.parseLong(downloadSize), partNumber);
 			roomServer.distributeMessage(MessageType.ROOM_SYNC, uniqueMessages);
 		});
 
@@ -259,6 +261,7 @@ public class RoomActivity extends AppCompatActivity {
 					long maxRange = Long.parseLong(range.split("-")[1]);
 					DownloadRepo.getInstance(getContext()).createFileDownload(urlHash, url, roomName,
 							Long.parseLong(partNumber), minRange, maxRange, maxRange - minRange);
+					RoomRepo.addRoom(urlHash, url, roomName, Long.parseLong(totalSize), Long.parseLong(totalParts));
 
 					urlTextEditText.setText(url);
 					urlTextInputLayout.setHelperText(Utils.getHumanReadableSize(Long.parseLong(totalSize)));
