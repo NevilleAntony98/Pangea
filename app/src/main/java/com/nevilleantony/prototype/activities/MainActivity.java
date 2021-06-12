@@ -21,28 +21,27 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jakewharton.rxbinding4.material.RxBottomNavigationView;
 import com.jakewharton.rxbinding4.viewpager2.RxViewPager2;
 import com.nevilleantony.prototype.R;
+import com.nevilleantony.prototype.adapters.DownloadsViewAdapter;
 import com.nevilleantony.prototype.adapters.ViewPagerAdapter;
 import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
-import com.nevilleantony.prototype.downloadmanager.FileDownload;
 import com.nevilleantony.prototype.fragments.DownloadsListFragment;
 import com.nevilleantony.prototype.fragments.SampleFragment;
 import com.nevilleantony.prototype.utils.Utils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final CompositeDisposable disposables = new CompositeDisposable();;
+    private final CompositeDisposable disposables = new CompositeDisposable();
+
     private ViewPager2 viewPager;
-    private List<FileDownload> downloadList = new ArrayList<>();
+    private DownloadsListFragment downloadsListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        downloadsListFragment = new DownloadsListFragment();
         DownloadRepo downloadRepo = DownloadRepo.getInstance(getApplicationContext());
         downloadRepo.addOnMapChangedCallback(
                 new DownloadRepo.onMapChanged() {
@@ -53,7 +52,11 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onDownloadsMapChanged() {
-                        downloadList.addAll(downloadRepo.getDownloads());
+                        if (downloadsListFragment.downloadsView != null) {
+                            downloadsListFragment.downloadsView.setAdapter(
+                                    new DownloadsViewAdapter(getApplicationContext(), downloadRepo.getDownloads()
+                                    ));
+                        }
                     }
                 }
         );
@@ -63,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         viewPager = findViewById(R.id.view_pager);
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
 
-        viewPagerAdapter.addFragment(new DownloadsListFragment(downloadList));
+        viewPagerAdapter.addFragment(downloadsListFragment);
         viewPagerAdapter.addFragment(SampleFragment.newInstance("Completed Page"));
 
         final BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);

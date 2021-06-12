@@ -21,13 +21,13 @@ import com.nevilleantony.prototype.utils.Utils;
 
 import java.util.List;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
+public class DownloadsViewAdapter extends RecyclerView.Adapter<DownloadsViewAdapter.DownloadsViewHolder> {
 
-    private final List<FileDownload> downloads;
+    private List<FileDownload> downloads;
     private Intent downloadIntent;
     private Context context;
 
-    public RecyclerViewAdapter(Context context, List<FileDownload> fileDownloadList) {
+    public DownloadsViewAdapter(Context context, List<FileDownload> fileDownloadList) {
         this.downloads = fileDownloadList;
         downloadIntent = new Intent(context, DownloadService.class);
         this.context = context;
@@ -35,14 +35,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @NonNull
     @Override
-    public RecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public DownloadsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.fragment_recyclerview_row, parent, false);
-        return new RecyclerViewHolder(view);
+        return new DownloadsViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull DownloadsViewHolder holder, int position) {
         FileDownload fileDownload = downloads.get(position);
         holder.downloadsName.setText(fileDownload.fileName);
         holder.downloadsStatus.setText(R.string.download_status);
@@ -94,7 +94,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return downloads.size();
     }
 
-    public static class RecyclerViewHolder extends RecyclerView.ViewHolder {
+    public static class DownloadsViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView downloadsName;
         private final TextView downloadsStatus;
@@ -103,7 +103,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         private final ToggleButton pauseResumeButton;
         private final ProgressBar progressBar;
 
-        public RecyclerViewHolder(@NonNull View itemView) {
+        public DownloadsViewHolder(@NonNull View itemView) {
             super(itemView);
             downloadsName = itemView.findViewById(R.id.download_name);
             downloadsStatus = itemView.findViewById(R.id.download_status);

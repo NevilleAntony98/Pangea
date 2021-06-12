@@ -12,7 +12,6 @@ import com.nevilleantony.prototype.storage.StorageApi;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -167,10 +166,9 @@ public class DownloadRepo {
         onMapChangedCallbacks.add(callback);
     }
 
-    public Collection<FileDownload> getDownloads() {
-        return downloadMap.values();
+    public List<FileDownload> getDownloads() {
+        return new ArrayList<FileDownload>(downloadMap.values());
     }
-
 
     public interface onMapChanged {
         void onCompletedMapChanged();

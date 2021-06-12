@@ -10,31 +10,24 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.nevilleantony.prototype.R;
-import com.nevilleantony.prototype.adapters.RecyclerViewAdapter;
-import com.nevilleantony.prototype.downloadmanager.FileDownload;
-
-import java.util.List;
+import com.nevilleantony.prototype.adapters.DownloadsViewAdapter;
+import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
 
 public class DownloadsListFragment extends Fragment {
-    private List<FileDownload> downloadList;
-
-    public DownloadsListFragment(List<FileDownload> fileDownloadList) {
-        this.downloadList = fileDownloadList;
-    }
+    public RecyclerView downloadsView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_download_cards_list, container, false);
 
-        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        downloadsView = view.findViewById(R.id.recyclerView);
+        downloadsView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        RecyclerViewAdapter recyclerViewAdapter = new RecyclerViewAdapter(getContext(), downloadList);
-        recyclerView.setAdapter(recyclerViewAdapter);
+        DownloadRepo downloadRepo = DownloadRepo.getInstance(getContext());
+        DownloadsViewAdapter downloadsViewAdapter = new DownloadsViewAdapter(getContext(), downloadRepo.getDownloads());
+        downloadsView.setAdapter(downloadsViewAdapter);
 
         return view;
-
-
     }
 }
