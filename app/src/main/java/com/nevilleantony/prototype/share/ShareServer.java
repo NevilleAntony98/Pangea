@@ -181,6 +181,44 @@ public class ShareServer {
 		});
 	}
 
+	public void receiveCompleteFile(ShareUtils.FileShareCallback fileShareCallback) {
+		handler.post(() -> {
+			try (OutputStream clientOutputStream = client.getOutputStream();
+			     InputStream clientInputStream = client.getInputStream()
+			) {
+				DataInputStream dataInputStream = new DataInputStream(clientInputStream);
+				DataOutputStream dataOutputStream = new DataOutputStream(clientOutputStream);
+
+				String groupId = dataInputStream.readUTF();
+				String fileName = dataInputStream.readUTF();
+				long totalSize = dataInputStream.readLong();
+
+				File file = new File(DownloadRepo.PATH + groupId + File.separator + fileName);
+
+				ShareUtils.receiveFile(file, clientInputStream, totalSize, fileShareCallback);
+
+				if (file.length() != totalSize) {
+					Log.e(TAG, "Mismatch in file size");
+				}
+
+				dataOutputStream.writeUTF("DONE");
+
+				String response = dataInputStream.readUTF();
+				if (!response.equals("DONE")) {
+					Log.e(TAG, "Mismatch in response, this session might be corrupted");
+				}
+
+				Log.d(TAG, "sync complete");
+				client.close();
+			} catch (IOException e) {
+				Log.e(TAG, "Failed to open or close one or more streams");
+				e.printStackTrace();
+			}
+
+			cleanup();
+		});
+	}
+
 	public void cleanup() {
 		if (handler != null) {
 			handler.removeCallbacksAndMessages(null);
