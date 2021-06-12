@@ -25,7 +25,7 @@ public class DownloadRepo {
     private final Map<String, FileDownload> downloadMap = new HashMap<>();
     private final StorageApi stgApi;
     private final Map<String, List<Long>> availablePartsMap = new HashMap<>();
-    private final List<onMapChanged> onMapChangedCallbacks;
+    private final List<OnMapChanged> onMapChangedCallbacks;
     private final Map<String, File> completedFileMap = new HashMap<>();
 
     private DownloadRepo(Context context) {
@@ -78,7 +78,7 @@ public class DownloadRepo {
                 downloadMap.put(model.getId(), fileDownload);
             }
 
-            for (onMapChanged callbacks : onMapChangedCallbacks) {
+            for (OnMapChanged callbacks : onMapChangedCallbacks) {
                 callbacks.onDownloadsMapChanged();
             }
         });
@@ -100,7 +100,7 @@ public class DownloadRepo {
                 }
             }
 
-            for (onMapChanged callback : onMapChangedCallbacks) {
+            for (OnMapChanged callback : onMapChangedCallbacks) {
                 callback.onCompletedMapChanged();
             }
         });
@@ -162,15 +162,15 @@ public class DownloadRepo {
         return new HashMap<>(availablePartsMap);
     }
 
-    public void addOnMapChangedCallback(onMapChanged callback) {
+    public void addOnMapChangedCallback(OnMapChanged callback) {
         onMapChangedCallbacks.add(callback);
     }
 
     public List<FileDownload> getDownloads() {
-        return new ArrayList<FileDownload>(downloadMap.values());
+        return new ArrayList<>(downloadMap.values());
     }
 
-    public interface onMapChanged {
+    public interface OnMapChanged {
         void onCompletedMapChanged();
 
         void onDownloadsMapChanged();

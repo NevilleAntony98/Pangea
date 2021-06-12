@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         downloadsListFragment = new DownloadsListFragment();
         DownloadRepo downloadRepo = DownloadRepo.getInstance(getApplicationContext());
         downloadRepo.addOnMapChangedCallback(
-                new DownloadRepo.onMapChanged() {
+                new DownloadRepo.OnMapChanged() {
                     @Override
                     public void onCompletedMapChanged() {
 
