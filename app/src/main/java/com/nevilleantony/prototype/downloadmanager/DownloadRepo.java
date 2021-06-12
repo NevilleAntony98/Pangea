@@ -1,4 +1,3 @@
-
 package com.nevilleantony.prototype.downloadmanager;
 
 import android.content.Context;
@@ -27,62 +26,17 @@ public class DownloadRepo {
     private final Map<String, FileDownload> downloadMap = new HashMap<>();
     private final StorageApi stgApi;
     private final Map<String, List<Long>> availablePartsMap = new HashMap<>();
-    private final List<OnDatabaseLoaded> onDatabaseLoadedCallbacks;
+    private final List<onMapChanged> onMapChangedCallbacks;
     private final Map<String, File> completedFileMap = new HashMap<>();
 
     private DownloadRepo(Context context) {
-        onDatabaseLoadedCallbacks = new ArrayList<>();
+        onMapChangedCallbacks = new ArrayList<>();
         stgApi = StorageApi.getInstance(context);
 
         File path = new File(PATH);
         if (!path.exists() && !path.mkdir()) {
             Log.d(TAG, "Failed to create directory: " + path.getAbsolutePath());
         }
-
-        stgApi.getAll(downloadsModelList -> {
-            for (DownloadsModel model : downloadsModelList) {
-                FileDownload fileDownload = new FileDownload(
-                        model.getId(),
-                        model.getFile_url(),
-                        model.getFile_name(),
-                        model.getRange(),
-                        model.getMin_range(),
-                        model.getMax_range(),
-                        model.getSize()
-                );
-                downloadMap.put(model.getId(), fileDownload);
-            }
-
-            for (OnDatabaseLoaded callbacks : onDatabaseLoadedCallbacks) {
-                callbacks.onDownloadsLoaded();
-            }
-        });
-
-        stgApi.getAvailDownload(availDownloadModel -> {
-            for (AvailableDownloadsModel model : availDownloadModel) {
-                if (!availablePartsMap.containsKey(model.getId())) {
-                    availablePartsMap.put(model.getId(), new ArrayList<>());
-                }
-                Objects.requireNonNull(availablePartsMap.get(model.getId())).add(model.getParts());
-            }
-
-            for (OnDatabaseLoaded callbacks : onDatabaseLoadedCallbacks) {
-                callbacks.onAvailableLoaded();
-            }
-        });
-
-        stgApi.retrieveNameId(nameId -> {
-            for (DownloadsDao.NameId model : nameId) {
-                File file = new File(PATH + model.id + File.separator + model.file_name);
-                if (file.exists()) {
-                    completedFileMap.put(model.id, file);
-                }
-            }
-
-            for (OnDatabaseLoaded callbacks : onDatabaseLoadedCallbacks) {
-                callbacks.onCompletedLoaded();
-            }
-        });
     }
 
     public static DownloadRepo getInstance(Context context) {
@@ -108,6 +62,49 @@ public class DownloadRepo {
         }
 
         return file;
+    }
+
+    public void unLoadDb() {
+        stgApi.getAll(downloadsModelList -> {
+            for (DownloadsModel model : downloadsModelList) {
+                FileDownload fileDownload = new FileDownload(
+                        model.getId(),
+                        model.getFile_url(),
+                        model.getFile_name(),
+                        model.getRange(),
+                        model.getMin_range(),
+                        model.getMax_range(),
+                        model.getSize()
+                );
+                downloadMap.put(model.getId(), fileDownload);
+            }
+
+            for (onMapChanged callbacks : onMapChangedCallbacks) {
+                callbacks.onDownloadsMapChanged();
+            }
+        });
+
+        stgApi.getAvailDownload(availDownloadModel -> {
+            for (AvailableDownloadsModel model : availDownloadModel) {
+                if (!availablePartsMap.containsKey(model.getId())) {
+                    availablePartsMap.put(model.getId(), new ArrayList<>());
+                }
+                Objects.requireNonNull(availablePartsMap.get(model.getId())).add(model.getParts());
+            }
+        });
+
+        stgApi.retrieveNameId(nameId -> {
+            for (DownloadsDao.NameId model : nameId) {
+                File file = new File(PATH + model.id + File.separator + model.file_name);
+                if (file.exists()) {
+                    completedFileMap.put(model.id, file);
+                }
+            }
+
+            for (onMapChanged callback : onMapChangedCallbacks) {
+                callback.onCompletedMapChanged();
+            }
+        });
     }
 
     public FileDownload createFileDownload(
@@ -166,21 +163,19 @@ public class DownloadRepo {
         return new HashMap<>(availablePartsMap);
     }
 
-    public void addOnDatabaseLoadedCallback(OnDatabaseLoaded callback) {
-        onDatabaseLoadedCallbacks.add(callback);
+    public void addOnMapChangedCallback(onMapChanged callback) {
+        onMapChangedCallbacks.add(callback);
     }
-
-    interface OnDatabaseLoaded {
-        void onAvailableLoaded();
-
-        void onCompletedLoaded();
-
-        void onDownloadsLoaded();
-    }
-
 
     public Collection<FileDownload> getDownloads() {
         return downloadMap.values();
+    }
+
+
+    public interface onMapChanged {
+        void onCompletedMapChanged();
+
+        void onDownloadsMapChanged();
     }
 
 }
