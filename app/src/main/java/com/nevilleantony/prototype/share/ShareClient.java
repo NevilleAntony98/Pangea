@@ -3,9 +3,11 @@ package com.nevilleantony.prototype.share;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Log;
 
 import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
+import com.nevilleantony.prototype.room.RoomRepo;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -184,6 +186,18 @@ public class ShareClient {
 					if (fileShareCallback != null) {
 						fileShareCallback.onShareCompleted();
 					}
+
+					// Check if anything can be merged
+					new Handler(Looper.getMainLooper()).postDelayed(() -> {
+						for (String key : requiredReceiveParts.keySet()) {
+							Log.d(TAG, "Checking room: " + key);
+							if (downloadRepo.getAvailableParts(key).size() == RoomRepo.getRoom(key).totalPartsNo) {
+								Log.d(TAG, "Merging file");
+								MergeService.start(context, key);
+							}
+						}
+					}, 5000);
+
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
