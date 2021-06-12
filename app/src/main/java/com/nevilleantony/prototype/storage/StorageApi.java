@@ -5,7 +5,6 @@ import android.content.Context;
 
 import java.util.List;
 
-import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 
@@ -86,6 +85,18 @@ public class StorageApi {
 
     public void getAvailDownload(DatabaseReturnable<List<AvailableDownloadsModel>> databaseReturnable) {
         db.getAvailDao().getAllAvailDownload().subscribeOn(Schedulers.io()).subscribe(databaseReturnable::returnable);
+    }
+
+    public void insertRoom(RoomModel room) {
+        db.getRoomDao().insert(room).subscribeOn(Schedulers.io()).subscribe();
+    }
+
+    public void getAllRooms(DatabaseReturnable<List<RoomModel>> databaseReturnable) {
+        db.getRoomDao().getAll().subscribeOn(Schedulers.io()).subscribe(databaseReturnable::returnable);
+    }
+
+    public void getRoom(String id, DatabaseReturnable<RoomModel> databaseReturnable) {
+        db.getRoomDao().getRoom(id).subscribeOn(Schedulers.io()).subscribe(databaseReturnable::returnable);
     }
 
     public interface DatabaseReturnable<T> {
