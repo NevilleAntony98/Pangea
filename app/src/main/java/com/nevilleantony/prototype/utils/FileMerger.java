@@ -18,12 +18,12 @@ import java.util.List;
 public class FileMerger {
 	private static final String TAG = "FileMerger";
 
-	public static boolean mergeDownload(String groupId, String fileName, Long totalPartsNo,
+	public static File mergeDownload(String groupId, String fileName, Long totalPartsNo,
 	                                    ProgressCallback progressCallback) {
 		File groupDir = new File(DownloadRepo.PATH + groupId);
 		if (!groupDir.exists()) {
 			Log.e(TAG, "Group folder doesn't exist for the given group ID");
-			return false;
+			return null;
 		}
 
 		List<File> fileList = new ArrayList<>();
@@ -33,7 +33,7 @@ public class FileMerger {
 			File part = new File(path);
 			if (!part.exists()) {
 				Log.e(TAG, "One or more parts were not found in group directory");
-				return false;
+				return null;
 			}
 
 			fileList.add(part);
@@ -42,7 +42,7 @@ public class FileMerger {
 		File output = new File(groupDir + File.separator + fileName);
 		mergeFiles(fileList, output, progressCallback);
 
-		return true;
+		return output;
 	}
 
 	private static void mergeFiles(List<File> parts, File output, ProgressCallback callable) {
