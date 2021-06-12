@@ -8,7 +8,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 
-@Database(entities = {DownloadsModel.class, AvailableDownloadsModel.class}, version = 1, exportSchema = false)
+@Database(entities = {DownloadsModel.class, AvailableDownloadsModel.class, RoomModel.class}, version = 1, exportSchema = false)
 public abstract class DownloadsDatabase extends RoomDatabase {
     public static DownloadsDatabase downloadDb;
 
@@ -22,6 +22,8 @@ public abstract class DownloadsDatabase extends RoomDatabase {
     public abstract DownloadsDao getDoa();
 
     public abstract AvailableDownloadsDao getAvailDao();
+
+    public abstract RoomDao getRoomDao();
 
     public void cleanUp() {
         downloadDb = null;
