@@ -13,13 +13,12 @@ import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.adapters.RecyclerViewAdapter;
 import com.nevilleantony.prototype.downloadmanager.FileDownload;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadsListFragment extends Fragment {
-    private List<FileDownload> downloadList ;
+    private List<FileDownload> downloadList;
 
-    public DownloadsListFragment(List<FileDownload> fileDownloadList){
+    public DownloadsListFragment(List<FileDownload> fileDownloadList) {
         this.downloadList = fileDownloadList;
     }
 
@@ -31,7 +30,7 @@ public class DownloadsListFragment extends Fragment {
         RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        RecyclerViewAdapter recyclerViewAdapter = new RecyclerViewAdapter(downloadList);
+        RecyclerViewAdapter recyclerViewAdapter = new RecyclerViewAdapter(getContext(), downloadList);
         recyclerView.setAdapter(recyclerViewAdapter);
 
         return view;

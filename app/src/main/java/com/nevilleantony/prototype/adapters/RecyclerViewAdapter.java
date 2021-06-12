@@ -1,6 +1,9 @@
 package com.nevilleantony.prototype.adapters;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,19 +15,22 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.nevilleantony.prototype.R;
-import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
+import com.nevilleantony.prototype.downloadmanager.DownloadService;
 import com.nevilleantony.prototype.downloadmanager.FileDownload;
 import com.nevilleantony.prototype.utils.Utils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
 
     private final List<FileDownload> downloads;
+    private Intent downloadIntent;
+    private Context context;
 
-    public RecyclerViewAdapter(List<FileDownload> fileDownloadList) {
+    public RecyclerViewAdapter(Context context, List<FileDownload> fileDownloadList) {
         this.downloads = fileDownloadList;
+        downloadIntent = new Intent(context, DownloadService.class);
+        this.context = context;
     }
 
     @NonNull
@@ -54,22 +60,30 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
             @Override
             public void onDownloadComplete() {
-                holder.downloadsStatus.setText(R.string.downloads_status_completed);
+                new Handler(Looper.getMainLooper()).post(
+                        () -> {
+                            holder.downloadsStatus.setText(R.string.downloads_status_completed);
+                        }
+                );
             }
 
             @Override
             public void onProgressChanged(int progress) {
-                String pg = Integer.toString(progress);
-                holder.downloadsPercentage.setText(String.format("%s%%", pg));
-                holder.progressBar.setProgress(progress);
+                new Handler(Looper.getMainLooper()).post(
+                        () -> {
+                            String pg = Integer.toString(progress);
+                            holder.downloadsPercentage.setText(String.format("%s%%", pg));
+                            holder.progressBar.setProgress(progress);
+                        }
+                );
             }
         });
         holder.pauseResumeButton.setOnClickListener((View view) -> {
             if (holder.pauseResumeButton.isChecked()) {
                 fileDownload.pauseDownload();
             } else {
-
-                fileDownload.startDownload(holder.downloadsName.getContext());
+                downloadIntent.putExtra("groupId", fileDownload.groupId);
+                context.startService(downloadIntent);
             }
         });
 
@@ -80,7 +94,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return downloads.size();
     }
 
-    public class RecyclerViewHolder extends RecyclerView.ViewHolder {
+    public static class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView downloadsName;
         private final TextView downloadsStatus;

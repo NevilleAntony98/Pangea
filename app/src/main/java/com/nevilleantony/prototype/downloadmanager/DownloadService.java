@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
@@ -50,7 +51,7 @@ public class DownloadService extends Service {
         PublishSubject<Integer> publishSubject = PublishSubject.create();
 
 
-        if(!notificationBuilderMap.containsKey(groupId)){
+        if (!notificationBuilderMap.containsKey(groupId)) {
             notificationIdMap.put(groupId, ++NOTIFICATION_ID);
             createNotification(fileDownload.fileName, fileDownload.groupId);
             fileDownload.addOnStateChangedCallback(new FileDownload.OnStateChangedCallback() {
@@ -75,6 +76,7 @@ public class DownloadService extends Service {
             });
         }
         disposables.add(publishSubject.throttleLast(NOTIFICATION_TIMEOUT, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(progress -> {
                     notificationBuilderMap.get(fileDownload.groupId).setProgress(100, progress, false);
                     Notification notification = notificationBuilderMap.get(fileDownload.groupId).build();
