@@ -24,8 +24,9 @@ import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.adapters.DownloadsViewAdapter;
 import com.nevilleantony.prototype.adapters.ViewPagerAdapter;
 import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
+import com.nevilleantony.prototype.fragments.CompletedListFragment;
 import com.nevilleantony.prototype.fragments.DownloadsListFragment;
-import com.nevilleantony.prototype.fragments.SampleFragment;
+
 import com.nevilleantony.prototype.room.RoomRepo;
 import com.nevilleantony.prototype.utils.Utils;
 
@@ -35,7 +36,6 @@ import io.reactivex.rxjava3.disposables.Disposable;
 public class MainActivity extends AppCompatActivity {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
-
     private ViewPager2 viewPager;
     private DownloadsListFragment downloadsListFragment;
 
@@ -70,8 +70,9 @@ public class MainActivity extends AppCompatActivity {
         viewPager = findViewById(R.id.view_pager);
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
 
+
         viewPagerAdapter.addFragment(downloadsListFragment);
-        viewPagerAdapter.addFragment(SampleFragment.newInstance("Completed Page"));
+        viewPagerAdapter.addFragment(new CompletedListFragment());
 
         final BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
         Disposable disposable = RxBottomNavigationView.itemSelections(bottomNavigationView)

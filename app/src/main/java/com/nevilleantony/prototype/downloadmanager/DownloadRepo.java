@@ -239,4 +239,8 @@ public class DownloadRepo {
         void onDownloadsMapChanged();
     }
 
+    public List<File> getFinishedDownloads() {
+        return new ArrayList<>(completedFileMap.values());
+    }
+
 }
