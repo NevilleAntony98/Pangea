@@ -134,6 +134,11 @@ public class DownloadRepo {
                 maxRange,
                 totalFileSize
         ));
+
+        for (OnMapChanged callbacks : onMapChangedCallbacks) {
+            callbacks.onDownloadsMapChanged();
+        }
+
         return downloadMap.get(groupId);
     }
 
