@@ -163,6 +163,13 @@ public class DownloadRepo {
         Objects.requireNonNull(availablePartsMap.get(id)).add(partNumber);
     }
 
+    public void addCompletedDownload(String groupId, File file) {
+        completedFileMap.put(groupId, file);
+        for (OnMapChanged callback : onMapChangedCallbacks) {
+            callback.onCompletedMapChanged();
+        }
+    }
+
     public Map<String, List<Long>> getAvailablePartsMap() {
         return new HashMap<>(availablePartsMap);
     }
