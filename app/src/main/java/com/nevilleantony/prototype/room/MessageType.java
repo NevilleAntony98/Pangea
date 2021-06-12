@@ -16,6 +16,7 @@ public enum MessageType {
 		[2] Total download size in bytes
 		[3] Range (same format as in http) assigned to current device
 		[4] Part number
+		[5] total number of parts
 	separated by the delimiter
 	*/
 	ROOM_SYNC('s'),

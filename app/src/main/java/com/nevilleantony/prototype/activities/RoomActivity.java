@@ -175,6 +175,7 @@ public class RoomActivity extends AppCompatActivity {
 				payload.add(downloadSize);
 				payload.add(range.toString());
 				payload.add(Long.toString(partNumber++));
+				payload.add(Long.toString(ranges.size() + 1));
 
 				uniqueMessages.add(MessageType.encodeList(payload));
 			}
@@ -252,6 +253,7 @@ public class RoomActivity extends AppCompatActivity {
 					String totalSize = urlDetails[2];
 					String range = urlDetails[3];
 					String partNumber = urlDetails[4];
+					String totalParts = urlDetails[5];
 
 					long minRange = Long.parseLong(range.split("-")[0]);
 					long maxRange = Long.parseLong(range.split("-")[1]);
