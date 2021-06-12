@@ -109,7 +109,7 @@ public class ShareServer {
 							dataOutputStream.writeLong(file.length());
 							dataOutputStream.flush();
 
-							ShareUtils.sendFile(file, clientOutputStream);
+							ShareUtils.sendFile(file, clientOutputStream, null);
 							if (!dataInputStream.readUTF().equals("SYNC")) {
 								Log.e(TAG, "Server and client out of sync");
 							}
@@ -141,7 +141,7 @@ public class ShareServer {
 								}
 							}
 
-							ShareUtils.receiveFile(file, clientInputStream, totalSize);
+							ShareUtils.receiveFile(file, clientInputStream, totalSize, null);
 							if (file.length() != totalSize) {
 								Log.e(TAG, "File size mismatch");
 							} else {

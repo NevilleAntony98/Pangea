@@ -91,29 +91,38 @@ public class ShareUtils {
 		return remaining;
 	}
 
-	public static void sendFile(File file, OutputStream outputStream) throws IOException {
+	public static void sendFile(File file, OutputStream outputStream, FileShareCallback fileShareCallback) throws IOException {
 		BufferedInputStream fileInputStream = new BufferedInputStream(new FileInputStream(file));
 		BufferedOutputStream socketOutputStream = new BufferedOutputStream(outputStream);
 
 		int currentRead;
 		byte[] buffer = new byte[BUFFER_SIZE];
+		long totalSize = file.length();
+		long totalRead = 0;
 		while ((currentRead = fileInputStream.read(buffer)) != -1) {
 			socketOutputStream.write(buffer, 0, currentRead);
+			totalRead += currentRead;
+			if (fileShareCallback != null) {
+				fileShareCallback.onShareProgressChanged((int) ((totalRead * 100)/totalSize));
+			}
 		}
 
 		socketOutputStream.flush();
 	}
 
-	public static void receiveFile(File file, InputStream inputStream, long totalSize) throws IOException {
+	public static void receiveFile(File file, InputStream inputStream, long totalSize, FileShareCallback fileShareCallback) throws IOException {
 		BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(file));
 		BufferedInputStream socketInputStream = new BufferedInputStream(inputStream);
 
 		int currentRead;
-		int totalRead = 0;
+		long totalRead = 0;
 		byte[] buffer = new byte[BUFFER_SIZE];
 		while (totalRead < totalSize && (currentRead = socketInputStream.read(buffer)) != -1) {
 			fileOutputStream.write(buffer, 0, currentRead);
 			totalRead += currentRead;
+			if (fileShareCallback != null) {
+				fileShareCallback.onShareProgressChanged((int) ((totalRead * 100)/totalSize));
+			}
 		}
 
 		fileOutputStream.flush();
