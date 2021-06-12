@@ -193,6 +193,43 @@ public class ShareClient {
 		});
 	}
 
+	public void sendCompleteFile(File file, ShareUtils.FileShareCallback fileShareCallback) {
+		if (!file.exists()) {
+			Log.e(TAG, "The given file does not exist");
+			return;
+		}
+
+		handler.post(() -> {
+			try (OutputStream socketOutputStream = socket.getOutputStream();
+			     InputStream socketInputStream = socket.getInputStream()
+			) {
+				DataInputStream dataInputStream = new DataInputStream(socketInputStream);
+				DataOutputStream dataOutputStream = new DataOutputStream(socketOutputStream);
+
+				dataOutputStream.writeUTF(Objects.requireNonNull(file.getAbsoluteFile().getParentFile()).getName());
+				dataOutputStream.writeUTF(file.getName());
+				dataOutputStream.writeLong(file.length());
+
+				ShareUtils.sendFile(file, socketOutputStream, fileShareCallback);
+
+				String response = dataInputStream.readUTF();
+				if (!response.equals("DONE")) {
+					Log.e(TAG, "Mismatch in response, this session might be corrupted");
+				}
+
+				dataOutputStream.writeUTF("DONE");
+
+				Log.d(TAG, "sync complete");
+				socket.close();
+			} catch (IOException e) {
+				Log.e(TAG, "Failed to open or close one or more streams");
+				e.printStackTrace();
+			}
+
+			cleanup();
+		});
+	}
+
 	public void cleanup() {
 		if (!socket.isClosed()) {
 			try {
