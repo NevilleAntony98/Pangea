@@ -22,9 +22,14 @@ import com.jakewharton.rxbinding4.material.RxBottomNavigationView;
 import com.jakewharton.rxbinding4.viewpager2.RxViewPager2;
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.adapters.ViewPagerAdapter;
+import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
+import com.nevilleantony.prototype.downloadmanager.FileDownload;
 import com.nevilleantony.prototype.fragments.DownloadsListFragment;
 import com.nevilleantony.prototype.fragments.SampleFragment;
 import com.nevilleantony.prototype.utils.Utils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -33,16 +38,32 @@ public class MainActivity extends AppCompatActivity {
 
     private final CompositeDisposable disposables = new CompositeDisposable();;
     private ViewPager2 viewPager;
+    private List<FileDownload> downloadList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        DownloadRepo downloadRepo = DownloadRepo.getInstance(getApplicationContext());
+        downloadRepo.addOnMapChangedCallback(
+                new DownloadRepo.onMapChanged() {
+                    @Override
+                    public void onCompletedMapChanged() {
+
+                    }
+
+                    @Override
+                    public void onDownloadsMapChanged() {
+                        downloadList.addAll(downloadRepo.getDownloads());
+                    }
+                }
+        );
+        downloadRepo.unLoadDb();
         setContentView(R.layout.activity_main);
 
         viewPager = findViewById(R.id.view_pager);
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
 
-        viewPagerAdapter.addFragment(new DownloadsListFragment());
+        viewPagerAdapter.addFragment(new DownloadsListFragment(downloadList));
         viewPagerAdapter.addFragment(SampleFragment.newInstance("Completed Page"));
 
         final BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);

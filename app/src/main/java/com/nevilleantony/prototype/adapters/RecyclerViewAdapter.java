@@ -21,13 +21,10 @@ import java.util.List;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewHolder> {
 
-    private final DownloadRepo downloadRepo;
     private final List<FileDownload> downloads;
 
-    public RecyclerViewAdapter(Context context) {
-        downloads = new ArrayList<>();
-        downloadRepo = DownloadRepo.getInstance(context);
-        downloads.addAll(downloadRepo.getDownloads());
+    public RecyclerViewAdapter(List<FileDownload> fileDownloadList) {
+        this.downloads = fileDownloadList;
     }
 
     @NonNull
