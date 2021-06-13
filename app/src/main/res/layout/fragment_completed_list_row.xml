@@ -20,13 +20,6 @@
             android:orientation="horizontal"
             android:padding="10dp">
 
-            <Button
-                android:id="@+id/share_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/share_button_text" />
-
             <TextView
                 android:id="@+id/completed_filename"
                 android:layout_width="wrap_content"
@@ -35,6 +28,13 @@
                 android:paddingVertical="15dp"
                 android:text="@string/completed_filename_text"
                 android:textSize="27sp" />
+
+            <Button
+                android:id="@+id/share_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/share_button_text" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

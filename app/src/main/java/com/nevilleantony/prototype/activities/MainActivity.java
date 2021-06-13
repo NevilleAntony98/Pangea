@@ -21,6 +21,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jakewharton.rxbinding4.material.RxBottomNavigationView;
 import com.jakewharton.rxbinding4.viewpager2.RxViewPager2;
 import com.nevilleantony.prototype.R;
+import com.nevilleantony.prototype.adapters.CompletedListAdapter;
 import com.nevilleantony.prototype.adapters.DownloadsViewAdapter;
 import com.nevilleantony.prototype.adapters.ViewPagerAdapter;
 import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
@@ -38,17 +39,23 @@ public class MainActivity extends AppCompatActivity {
     private final CompositeDisposable disposables = new CompositeDisposable();
     private ViewPager2 viewPager;
     private DownloadsListFragment downloadsListFragment;
+    private CompletedListFragment completedListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         downloadsListFragment = new DownloadsListFragment();
+        completedListFragment = new CompletedListFragment();
         DownloadRepo downloadRepo = DownloadRepo.getInstance(getApplicationContext());
         downloadRepo.addOnMapChangedCallback(
                 new DownloadRepo.OnMapChanged() {
                     @Override
                     public void onCompletedMapChanged() {
-
+                        if (completedListFragment.completedView != null) {
+                            completedListFragment.completedView.setAdapter(
+                                    new CompletedListAdapter(getApplicationContext(), downloadRepo.getFinishedDownloads())
+                            );
+                        }
                     }
 
                     @Override
@@ -70,9 +77,8 @@ public class MainActivity extends AppCompatActivity {
         viewPager = findViewById(R.id.view_pager);
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
 
-
         viewPagerAdapter.addFragment(downloadsListFragment);
-        viewPagerAdapter.addFragment(new CompletedListFragment());
+        viewPagerAdapter.addFragment(completedListFragment);
 
         final BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
         Disposable disposable = RxBottomNavigationView.itemSelections(bottomNavigationView)
