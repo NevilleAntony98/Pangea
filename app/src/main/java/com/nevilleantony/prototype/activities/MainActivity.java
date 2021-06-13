@@ -90,18 +90,14 @@ public class MainActivity extends AppCompatActivity {
         disposable = RxViewPager2.pageSelections(viewPager)
                 .skipInitialValue()
                 .subscribe(position -> {
-                    int item_id = R.id.downloads_action;
-                    FloatingActionButton fab = findViewById(R.id.new_download_fab);
+                    int item_id = position == 0 ? R.id.downloads_action : R.id.finished_downloads_action;
+                    FloatingActionButton newRoomFAB = findViewById(R.id.new_download_fab);
+                    FloatingActionButton shareFAB = findViewById(R.id.share_fab);
+                    FloatingActionButton receiveFAB = findViewById(R.id.receive_fab);
 
-                    switch (position) {
-                        case 0:
-                            fab.show();
-                            break;
-                        case 1:
-                            item_id = R.id.finished_downloads_action;
-                            fab.hide();
-                            break;
-                    }
+                    newRoomFAB.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
+                    shareFAB.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
+                    receiveFAB.setVisibility(position == 0 ? View.GONE : View.VISIBLE);
 
                     bottomNavigationView.getMenu().findItem(item_id).setChecked(true);
                 });
@@ -182,6 +178,12 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, ShareActivity.class);
             startActivity(intent);
         }
+    }
+
+    public void onReceiveFABClicked(View view) {
+        Intent intent = new Intent(this, ShareActivity.class);
+        intent.putExtra("receive_file", true);
+        startActivity(intent);
     }
 
     @Override

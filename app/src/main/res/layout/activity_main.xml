@@ -41,10 +41,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
+                android:layout_marginBottom="15dp"
                 android:clickable="true"
                 android:contentDescription="@string/new_download_placeholder_description"
                 android:onClick="onFABClicked"
-                android:layout_marginBottom="15dp"
                 app:srcCompat="@drawable/ic_baseline_add_24" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -56,6 +56,17 @@
                 android:contentDescription="@string/share_files"
                 android:onClick="onFABClicked"
                 app:srcCompat="@drawable/ic_baseline_sync_24" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/receive_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:clickable="true"
+                android:contentDescription="@string/receive_file"
+                android:onClick="onReceiveFABClicked"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_baseline_file_download_24" />
 
         </LinearLayout>
 

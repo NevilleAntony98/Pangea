@@ -65,4 +65,5 @@
     <string name="sharing_sync_info">Sharing sync info</string>
     <string name="all_complete">All complete</string>
     <string name="done">Done</string>
+    <string name="receive_file">Receive file</string>
 </resources>
