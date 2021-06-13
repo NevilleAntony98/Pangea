@@ -26,6 +26,7 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.journeyapps.barcodescanner.CaptureActivity;
 import com.nevilleantony.prototype.R;
+import com.nevilleantony.prototype.downloadmanager.DownloadRepo;
 import com.nevilleantony.prototype.share.ShareClient;
 import com.nevilleantony.prototype.share.ShareNetworkManager;
 import com.nevilleantony.prototype.share.ShareServer;
@@ -33,6 +34,7 @@ import com.nevilleantony.prototype.share.ShareUtils;
 import com.nevilleantony.prototype.utils.QRCodeManager;
 import com.nevilleantony.prototype.utils.Utils;
 
+import java.io.File;
 import java.io.IOException;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -55,12 +57,21 @@ public class ShareActivity extends AppCompatActivity {
 	private ShareClient shareClient;
 	private ConnectionType connectionType;
 	private WifiManager.LocalOnlyHotspotReservation reservation;
+	private File sendFile;
+	private boolean receiveFile;
 	private Disposable disposable;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_share);
+
+		String sendPath = getIntent().getStringExtra("send_path");
+		if (sendPath != null) {
+			sendFile = new File(sendPath);
+		}
+		receiveFile = getIntent().getBooleanExtra("receive_file", false);
+
 		toggleButton = findViewById(R.id.share_toggle_button);
 		qrImageView = findViewById(R.id.share_qr_image);
 		startShareButton = findViewById(R.id.start_share_button);
@@ -69,6 +80,9 @@ public class ShareActivity extends AppCompatActivity {
 		progressBar.setIndeterminate(true);
 		Button newRoomButton = findViewById(R.id.share_new_room_button);
 		Button joinRoomButton = findViewById(R.id.share_join_room_button);
+
+		newRoomButton.setVisibility(receiveFile ? View.GONE : View.VISIBLE);
+		joinRoomButton.setVisibility(sendPath != null ? View.GONE : View.VISIBLE);
 
 		newRoomButton.setOnClickListener(this::onNewRoomClicked);
 		joinRoomButton.setOnClickListener(this::onJoinRoomClicked);
@@ -94,9 +108,13 @@ public class ShareActivity extends AppCompatActivity {
 				@Override
 				public void onShareCompleted() {
 					new Handler(Looper.getMainLooper()).post(() -> {
+						if (receiveFile) {
+							DownloadRepo.getInstance(getContext()).refreshCompletedMap();
+						}
+
 						startShareButton.setText(R.string.done);
 						startShareButton.setEnabled(true);
-						startShareButton.setOnClickListener(null);
+						startShareButton.setOnClickListener(v -> finish());
 						progressBar.setProgress(100, true);
 					});
 				}
@@ -104,10 +122,20 @@ public class ShareActivity extends AppCompatActivity {
 
 			if (connectionType == ConnectionType.HOTSPOT_OWNER) {
 				shareClient.setFileShareCallback(fileShareCallback);
-				shareClient.start(this);
+
+				if (sendFile == null) {
+					shareClient.start(this);
+				} else {
+					shareClient.sendCompleteFile(sendFile);
+				}
 			} else {
 				shareServer.setFileShareCallback(fileShareCallback);
-				shareServer.start(this);
+				if (receiveFile) {
+					shareServer.receiveCompleteFile();
+				}
+				{
+					shareServer.start(this);
+				}
 			}
 
 			startShareButton.setText(R.string.syncing);
