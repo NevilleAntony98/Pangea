@@ -207,7 +207,7 @@ public class ShareClient {
 		});
 	}
 
-	public void sendCompleteFile(File file, ShareUtils.FileShareCallback fileShareCallback) {
+	public void sendCompleteFile(File file) {
 		if (!file.exists()) {
 			Log.e(TAG, "The given file does not exist");
 			return;
@@ -233,7 +233,8 @@ public class ShareClient {
 
 				dataOutputStream.writeUTF("DONE");
 
-				Log.d(TAG, "sync complete");
+				fileShareCallback.onShareCompleted();
+				Log.d(TAG, "send complete");
 				socket.close();
 			} catch (IOException e) {
 				Log.e(TAG, "Failed to open or close one or more streams");

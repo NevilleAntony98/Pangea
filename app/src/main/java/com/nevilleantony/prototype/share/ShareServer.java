@@ -194,7 +194,7 @@ public class ShareServer {
 		});
 	}
 
-	public void receiveCompleteFile(ShareUtils.FileShareCallback fileShareCallback) {
+	public void receiveCompleteFile() {
 		handler.post(() -> {
 			try (OutputStream clientOutputStream = client.getOutputStream();
 			     InputStream clientInputStream = client.getInputStream()
@@ -207,6 +207,23 @@ public class ShareServer {
 				long totalSize = dataInputStream.readLong();
 
 				File file = new File(DownloadRepo.PATH + groupId + File.separator + fileName);
+				if (!file.getParentFile().exists() && !file.getParentFile().mkdir()) {
+					Log.e(TAG, "Failed to create folder for room ID");
+				}
+
+				if (!file.createNewFile()) {
+					Log.e(TAG, "A file with given name exists");
+					if (file.length() == totalSize) {
+						fileShareCallback.onShareCompleted();
+
+						return;
+					}
+
+					Log.d(TAG, "Deleting existing file");
+					if (!file.delete() || file.createNewFile()) {
+						Log.e(TAG, "Failed to delete and create new file");
+					}
+				}
 
 				ShareUtils.receiveFile(file, clientInputStream, totalSize, fileShareCallback);
 
@@ -221,7 +238,8 @@ public class ShareServer {
 					Log.e(TAG, "Mismatch in response, this session might be corrupted");
 				}
 
-				Log.d(TAG, "sync complete");
+				fileShareCallback.onShareCompleted();
+				Log.d(TAG, "receive complete");
 				client.close();
 			} catch (IOException e) {
 				Log.e(TAG, "Failed to open or close one or more streams");
