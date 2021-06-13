@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
+import androidx.core.util.Pair;
+
 import com.nevilleantony.prototype.storage.AvailableDownloadsModel;
 import com.nevilleantony.prototype.storage.DownloadsDao;
 import com.nevilleantony.prototype.storage.DownloadsModel;
@@ -11,11 +13,15 @@ import com.nevilleantony.prototype.storage.StorageApi;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 public class DownloadRepo {
@@ -92,6 +98,8 @@ public class DownloadRepo {
             }
         });
 
+        refreshCompletedMap();
+
         stgApi.retrieveNameId(nameId -> {
             for (DownloadsDao.NameId model : nameId) {
                 File file = new File(PATH + model.id + File.separator + model.file_name);
@@ -140,6 +148,46 @@ public class DownloadRepo {
         }
 
         return downloadMap.get(groupId);
+    }
+
+    public void refreshCompletedMap() {
+        stgApi.retrieveNameId(nameId -> {
+            for (DownloadsDao.NameId model : nameId) {
+                File file = new File(PATH + model.id + File.separator + model.file_name);
+                if (file.exists()) {
+                    completedFileMap.put(model.id, file);
+                }
+            }
+
+            try {
+                Files.walk(Paths.get(DownloadRepo.PATH), 1)
+                        .skip(1)
+                        .filter(path -> {
+                            if (completedFileMap.containsKey(path.getFileName().toString())) {
+                                return false;
+                            }
+
+                            File file = path.toFile();
+                            if (!file.isDirectory()) {
+                                return false;
+                            }
+
+                            File[] children = file.listFiles();
+                            return children.length == 1 && children[0].isFile();
+                        })
+                        .map(path -> new Pair<>(path.getFileName().toString(), path.toFile().listFiles()[0]))
+                        .forEach(idFile -> {
+                            completedFileMap.put(idFile.first, idFile.second);
+                        });
+            } catch (IOException e) {
+                Log.d(TAG, "Failed to load non DB completed files");
+                e.printStackTrace();
+            }
+
+            for (OnMapChanged callback : onMapChangedCallbacks) {
+                callback.onCompletedMapChanged();
+            }
+        });
     }
 
     public void updateMinRange(String groupId, Long range, Long minRange) {
