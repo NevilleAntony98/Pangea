@@ -30,7 +30,7 @@ public class FileDownload {
     HttpURLConnection urlConnection = null;
     FileOutputStream fileOutput = null;
     InputStream input = null;
-    private DownloadState state = DownloadState.NOT_STARTED;
+    private DownloadState state;
     private int progress;
     private long downloadedSize;
     private DownloadRepo downloadRepo = null;
@@ -53,8 +53,12 @@ public class FileDownload {
         this.totalFileSize = totalFileSize;
         this.fileName = fileName;
 
-        if(minRange == maxRange){
+        if (minRange.equals(maxRange)) {
             this.state = DownloadState.COMPLETED;
+            progress = 100;
+        } else {
+            this.state = DownloadState.PAUSED;
+            progress = (int) ((minRange - (maxRange - totalFileSize)) * 100 / totalFileSize);
         }
         HandlerThread downloadThread = new HandlerThread(TAG + " " + groupId);
         downloadThread.start();
@@ -66,7 +70,9 @@ public class FileDownload {
 
 
     public void startDownload(Context context) {
-        if(state == DownloadState.COMPLETED){return;}
+        if (state == DownloadState.COMPLETED) {
+            return;
+        }
         state = DownloadState.RUNNING;
 
         for (OnStateChangedCallback callback : onStateChangedCallbacks) {
@@ -89,27 +95,24 @@ public class FileDownload {
 
                         if (minRange + downloadedSize <= maxRange) {
                             byte[] data = new byte[BYTE_ARRAY_SIZE];
-                            long total = downloadedSize;
                             int count;
                             while (state != DownloadState.PAUSED && (count = input.read(data)) != -1) {
-                                total += count;
-                                downloadedSize = total;
-                                progress = (int) (total * 100 / totalFileSize);
+                                fileOutput.write(data, 0, count);
+                                downloadedSize += count;
+                                progress =
+                                        (int) ((minRange + downloadedSize - (maxRange - totalFileSize)) * 100 / totalFileSize);
+
                                 for (OnStateChangedCallback callback : onStateChangedCallbacks) {
                                     callback.onProgressChanged(progress);
                                 }
-                                fileOutput.write(data, 0, count);
                             }
                         }
                         if (state == DownloadState.PAUSED) {
-                            downloadRepo = DownloadRepo.getInstance(context);
-                            if (downloadRepo != null) {
-                                downloadRepo.updateMinRange(groupId, partNo, minRange + downloadedSize);
-                            }
+                            writeProgressToDB(context);
                         } else {
                             state = DownloadState.COMPLETED;
+                            writeProgressToDB(context);
                             downloadRepo = DownloadRepo.getInstance(context);
-                            downloadRepo.updateMinRange(groupId, partNo, maxRange);
                             downloadRepo.addAvailablePart(groupId, partNo);
                             for (OnStateChangedCallback callback : onStateChangedCallbacks) {
                                 callback.onDownloadComplete();
@@ -149,6 +152,17 @@ public class FileDownload {
         }
     }
 
+    public int getProgress() {
+        return progress;
+    }
+
+    public void writeProgressToDB(Context context) {
+        downloadRepo = DownloadRepo.getInstance(context);
+        if (downloadRepo != null) {
+            downloadRepo.updateMinRange(groupId, partNo, minRange + downloadedSize);
+        }
+    }
+
     public DownloadState getState() {
         return this.state;
     }
@@ -181,6 +195,26 @@ public class FileDownload {
             }
 
             return action;
+        }
+
+        public static String toString(DownloadState state) {
+            String stateString;
+
+            switch (state) {
+                case RUNNING:
+                    stateString = "Downloading";
+                    break;
+                case PAUSED:
+                    stateString = "Paused";
+                    break;
+                case COMPLETED:
+                    stateString = "Completed";
+                    break;
+                default:
+                    stateString = "";
+            }
+
+            return stateString;
         }
     }
 
