@@ -7,25 +7,26 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.downloadmanager.DownloadService;
 import com.nevilleantony.prototype.downloadmanager.FileDownload;
 import com.nevilleantony.prototype.utils.Utils;
 
 import java.util.List;
+import java.util.Locale;
 
 public class DownloadsViewAdapter extends RecyclerView.Adapter<DownloadsViewAdapter.DownloadsViewHolder> {
 
-    private List<FileDownload> downloads;
-    private Intent downloadIntent;
-    private Context context;
+    private final List<FileDownload> downloads;
+    private final Intent downloadIntent;
+    private final Context context;
 
     public DownloadsViewAdapter(Context context, List<FileDownload> fileDownloadList) {
         this.downloads = fileDownloadList;
@@ -44,49 +45,55 @@ public class DownloadsViewAdapter extends RecyclerView.Adapter<DownloadsViewAdap
     @Override
     public void onBindViewHolder(@NonNull DownloadsViewHolder holder, int position) {
         FileDownload fileDownload = downloads.get(position);
+        FileDownload.DownloadState downloadState = fileDownload.getState();
+
         holder.downloadsName.setText(fileDownload.fileName);
-        holder.downloadsStatus.setText(R.string.download_status);
+        holder.downloadsStatus.setText(FileDownload.DownloadState.toString(downloadState));
         holder.downloadsSize.setText(Utils.getHumanReadableSize(fileDownload.totalFileSize));
-        holder.downloadsPercentage.setText(R.string.downloads_percent_initial);
+        holder.downloadsPercentage.setText(String.format(Locale.getDefault(), "%d%%", fileDownload.getProgress()));
+        holder.progressBar.setProgress(fileDownload.getProgress(), true);
+        holder.pauseResumeButton.setVisibility(downloadState == FileDownload.DownloadState.COMPLETED ?
+                View.GONE :
+                View.VISIBLE);
+
         fileDownload.addOnStateChangedCallback(new FileDownload.OnStateChangedCallback() {
             @Override
             public void onStateChanged(FileDownload.DownloadState state) {
-                if (state == FileDownload.DownloadState.RUNNING) {
-                    holder.pauseResumeButton.setTextOff("PAUSE");
-                } else if (state == FileDownload.DownloadState.PAUSED) {
-                    holder.pauseResumeButton.setTextOn("RESUME");
-                }
+                holder.downloadsStatus.setText(FileDownload.DownloadState.toString(state));
+                holder.pauseResumeButton.setIconResource(state == FileDownload.DownloadState.RUNNING ?
+                        R.drawable.ic_round_pause_24 :
+                        R.drawable.ic_round_play_arrow_24);
             }
 
             @Override
             public void onDownloadComplete() {
-                new Handler(Looper.getMainLooper()).post(
-                        () -> {
-                            holder.downloadsStatus.setText(R.string.downloads_status_completed);
+                new Handler(Looper.getMainLooper()).post(() -> {
+                            holder.downloadsStatus.setText(FileDownload.DownloadState.toString(fileDownload.getState()));
+                            holder.pauseResumeButton.setVisibility(View.GONE);
                         }
                 );
             }
 
             @Override
             public void onProgressChanged(int progress) {
-                new Handler(Looper.getMainLooper()).post(
-                        () -> {
-                            String pg = Integer.toString(progress);
-                            holder.downloadsPercentage.setText(String.format("%s%%", pg));
-                            holder.progressBar.setProgress(progress);
+                new Handler(Looper.getMainLooper()).post(() -> {
+                            holder.downloadsPercentage.setText(String.format(Locale.getDefault(), "%d%%", progress));
+                            holder.progressBar.setProgress(progress, true);
                         }
                 );
             }
         });
-        holder.pauseResumeButton.setOnClickListener((View view) -> {
-            if (holder.pauseResumeButton.isChecked()) {
+        holder.pauseResumeButton.setOnClickListener(v -> {
+            FileDownload.DownloadState currentState = fileDownload.getState();
+
+            if (currentState == FileDownload.DownloadState.RUNNING) {
                 fileDownload.pauseDownload();
+                holder.pauseResumeButton.setIconResource(R.drawable.ic_round_play_arrow_24);
             } else {
                 downloadIntent.putExtra("groupId", fileDownload.groupId);
                 context.startService(downloadIntent);
             }
         });
-
     }
 
     @Override
@@ -100,8 +107,8 @@ public class DownloadsViewAdapter extends RecyclerView.Adapter<DownloadsViewAdap
         private final TextView downloadsStatus;
         private final TextView downloadsSize;
         private final TextView downloadsPercentage;
-        private final ToggleButton pauseResumeButton;
-        private final ProgressBar progressBar;
+        private final MaterialButton pauseResumeButton;
+        private final LinearProgressIndicator progressBar;
 
         public DownloadsViewHolder(@NonNull View itemView) {
             super(itemView);
