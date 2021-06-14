@@ -14,14 +14,12 @@ import com.nevilleantony.prototype.storage.StorageApi;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 public class DownloadRepo {
@@ -175,10 +173,8 @@ public class DownloadRepo {
                             File[] children = file.listFiles();
                             return children.length == 1 && children[0].isFile();
                         })
-                        .map(path -> new Pair<>(path.getFileName().toString(), path.toFile().listFiles()[0]))
-                        .forEach(idFile -> {
-                            completedFileMap.put(idFile.first, idFile.second);
-                        });
+                        .map(path -> new Pair<>(path.getFileName().toString(), Objects.requireNonNull(path.toFile().listFiles())[0]))
+                        .forEach(idFile -> completedFileMap.put(idFile.first, idFile.second));
             } catch (IOException e) {
                 Log.d(TAG, "Failed to load non DB completed files");
                 e.printStackTrace();
@@ -215,6 +211,13 @@ public class DownloadRepo {
         completedFileMap.put(groupId, file);
         for (OnMapChanged callback : onMapChangedCallbacks) {
             callback.onCompletedMapChanged();
+        }
+    }
+
+    public void writeAllDownloads(Context context) {
+        Log.d(TAG, "Writing all download progress to database");
+        for (FileDownload fileDownload : downloadMap.values()) {
+            fileDownload.writeProgressToDB(context);
         }
     }
 

@@ -190,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         disposables.dispose();
+        DownloadRepo.getInstance(this).writeAllDownloads(getApplicationContext());
     }
 
 
