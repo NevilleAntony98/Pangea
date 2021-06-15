@@ -28,7 +28,6 @@
                 android:id="@+id/download_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="stest"
                 android:textSize="27sp" />
 
             <TextView
@@ -36,7 +35,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="Downloading"
                 android:textStyle="italic" />
         </LinearLayout>
 
@@ -47,7 +45,6 @@
             android:layout_gravity="center"
             android:layout_weight="2"
             android:gravity="end|center_vertical"
-            android:text="10GB"
             android:textAlignment="textEnd"
             android:textColor="#88ffffff" />
     </LinearLayout>
@@ -64,13 +61,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            app:rippleColor="#00000000"
             android:scaleX="1.5"
             android:scaleY="1.5"
             app:icon="@drawable/ic_round_play_arrow_24"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
-            app:iconTint="#aaaaaa" />
+            app:iconTint="#aaaaaa"
+            app:rippleColor="#00000000" />
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/download_progress_bar"
@@ -88,10 +85,9 @@
             android:layout_width="5sp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:maxLines="1"
             android:layout_marginStart="10dp"
             android:layout_weight="1"
-            android:text="60%" />
+            android:maxLines="1" />
     </LinearLayout>
 
 </LinearLayout>

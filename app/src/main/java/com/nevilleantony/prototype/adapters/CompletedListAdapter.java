@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.nevilleantony.prototype.R;
 import com.nevilleantony.prototype.activities.ShareActivity;
+import com.nevilleantony.prototype.utils.Utils;
 
 import java.io.File;
 import java.util.List;
@@ -41,8 +42,14 @@ public class CompletedListAdapter extends RecyclerView.Adapter<CompletedListAdap
         final Intent shareIntent = new Intent(context, ShareActivity.class);
 
         holder.downloadsName.setText(file.getName());
-
+        holder.downloadSize.setText(Utils.getHumanReadableSize(file.length()));
         holder.shareButton.setOnClickListener(v -> {
+            if (!Utils.isLocationEnabled(context)) {
+                Utils.tryRequestLocation(context);
+
+                return;
+            }
+
             shareIntent.putExtra("send_path", file.getAbsolutePath());
             context.startActivity(shareIntent);
         });
@@ -53,14 +60,16 @@ public class CompletedListAdapter extends RecyclerView.Adapter<CompletedListAdap
         return downloads.size();
     }
 
-    public class RecyclerViewHolder extends RecyclerView.ViewHolder {
+    public static class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView downloadsName;
+        private final TextView downloadSize;
         private final Button shareButton;
 
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             downloadsName = itemView.findViewById(R.id.completed_filename);
+            downloadSize = itemView.findViewById(R.id.completed_file_size);
             shareButton = itemView.findViewById(R.id.share_button);
         }
     }
