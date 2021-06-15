@@ -8,7 +8,10 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginVertical="15dp"
+        android:background="@drawable/rounded_corner_card"
+        android:backgroundTint="#222222"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="146dp">
 
@@ -26,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="9"
                 android:paddingVertical="15dp"
-                android:text="@string/completed_filename_text"
+                android:text="filename"
                 android:textSize="27sp" />
 
             <Button
@@ -34,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/share_button_text" />
+                android:text="Share" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

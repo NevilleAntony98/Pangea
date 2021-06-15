@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.nevilleantony.prototype.R;
-import com.nevilleantony.prototype.downloadmanager.DownloadService;
+import com.nevilleantony.prototype.activities.ShareActivity;
 
 import java.io.File;
 import java.util.List;
@@ -20,12 +20,10 @@ import java.util.List;
 public class CompletedListAdapter extends RecyclerView.Adapter<CompletedListAdapter.RecyclerViewHolder> {
 
     private final List<File> downloads;
-    private final Intent downloadIntent;
     private final Context context;
 
     public CompletedListAdapter(Context context, List<File> completedList) {
         this.downloads = completedList;
-        downloadIntent = new Intent(context, DownloadService.class);
         this.context = context;
     }
 
@@ -39,8 +37,15 @@ public class CompletedListAdapter extends RecyclerView.Adapter<CompletedListAdap
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
-        File fileDownload = downloads.get(position);
-        holder.downloadsName.setText(fileDownload.getName());
+        File file = downloads.get(position);
+        final Intent shareIntent = new Intent(context, ShareActivity.class);
+
+        holder.downloadsName.setText(file.getName());
+
+        holder.shareButton.setOnClickListener(v -> {
+            shareIntent.putExtra("send_path", file.getAbsolutePath());
+            context.startActivity(shareIntent);
+        });
     }
 
     @Override
@@ -51,12 +56,12 @@ public class CompletedListAdapter extends RecyclerView.Adapter<CompletedListAdap
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView downloadsName;
-        private final Button stopButton;
+        private final Button shareButton;
 
         public RecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             downloadsName = itemView.findViewById(R.id.completed_filename);
-            stopButton = itemView.findViewById(R.id.stop_download_button);
+            shareButton = itemView.findViewById(R.id.share_button);
         }
     }
 }
